@@ -1,0 +1,39 @@
+
+namespace functions//空间名字不能改名和删除
+
+/*
+需让客户端调用的函数,请在以下自定义函数,
+以下已默认sql数据库操作函数
+*/
+
+getServerTime = function(){//返回服务器时间
+	var t = ..time();
+	t.format = "%Y-%m-%d %H:%M:%S";
+	return tostring(t);
+}
+
+exec = function( ... ){//执行sql语句
+	return ..sqlhelper.exec( ... );
+}
+
+getTable = function( ... ){//返回数据库查询table对像
+	return ..sqlhelper.getTable( ... );
+}
+
+getTables = function( ... ){//执行多个select语句,参数table对像
+	return ..sqlhelper.getTables( ... );
+}
+
+transaction = function( ... ){//事务执行，参数table对像
+	return ..sqlhelper.transaction( ... );
+}
+
+storedProcedures = function( ... ){//存储过程
+	return ..sqlhelper.storedProcedures( ... );
+}
+
+/* 请在以下编写自定义函数*/
+
+funTest = function(...){
+	return ...; 
+}

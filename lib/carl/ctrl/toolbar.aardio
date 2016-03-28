@@ -1,0 +1,174 @@
+//toolbar 工具条控件
+namespace carl.ctrl.toolbar{}
+
+import win.ui.ctrl.metaProperty;
+namespace win.ui.ctrl; 
+class toolbar { 
+	ctor(parent,tParam){
+/*DSG{{*/
+this = win.form(text="aardio form";right=995;bottom=23;border="none";exmode="none";mode="child";parent=parent;tParam=tParam)
+this.add()
+/*}}*/
+
+		this.toolbar = win.ui.toolbar(this);
+		this.toolbar.create( style = 0x1000/*_TBSTYLE_LIST*/); // 创建工具条
+		this.toolbar.showLabel = true; //在按钮上显示文字
+		this.toolbar.imageList = win.imageList( 16, 16 ).add($"~/lib/carl/ctrl/.res/toolbar.gif",0xFFFFFF/*透明色*/) ; 
+		this.toolbar.add(); 
+	}
+
+	add = function (text, proc, iBitmap = 0,id) { 
+    	if(!id)
+    		id = this.toolbar.parent.registCommand(proc);
+    	else {
+    		if(proc) this.toolbar.parent.registCommand(proc,id);
+    	} 
+    	
+		var tbb = win.ui.toolbar.TBBUTTON(this.toolbar);
+		tbb.iBitmap = iBitmap - 1;
+		tbb.idCommand = id;
+		tbb.fsState = 0x4/*_TBSTATE_ENABLED*/;
+		tbb.fsStyle = text == null ? 0x1/*_TBSTYLE_SEP*/ : 0x0/*_TBSTYLE_BUTTON*/ | 0x10/*_TBSTYLE_AUTOSIZE*/;
+		tbb.iString = text or "";
+		..table.push(this.toolbar.buttons,tbb );
+
+		::SendMessageByStruct(this.toolbar.hwnd, 0x444/*_TB_ADDBUTTONSW*/, 1, tbb);  
+		::SendMessageInt(this.toolbar.hwnd, 0x421/*_TB_AUTOSIZE*/, 0, 0);  
+		return tbb;
+	} 
+	
+	buttons = function(){
+		return this.toolbar.buttons; 
+	}
+	
+	hidebar = function( name, s){//隐藏true，显示false
+		var buttons = this.buttons();
+		for(i=1;#buttons;1){
+			var bt = this.toolbar.getButton(i);
+			var btl = this.toolbar.getButton(i+1);
+			if(bt.text == name){				
+				::SendMessageInt(this.toolbar.hwnd, 0x0400 + 4/*_TB_HIDEBUTTON*/, bt.id, s ? 1 : 0)
+				if(btl && !#btl.text) ::SendMessageInt(this.toolbar.hwnd, 0x0400 + 4/*_TB_HIDEBUTTON*/, btl.id, s ? 1 : 0)
+			}
+		}
+	}
+	
+	enabled = function(name, s = true){//禁用false,启用true
+		var buttons = this.buttons();
+		for(i=1;#buttons;1){
+			var bt = this.toolbar.getButton(i);
+			if(bt.text == name && bt.enabled != s){
+				bt.enabled = s;
+			}
+		}
+	}
+	
+	createButton = function(name,func,num, ...){
+		var t = {...};
+		var funcom = function(id){
+			if(type(func) != type.function) return ; 
+			var btnEvent = this.toolbar.getButtonById(id);
+			btnEvent.disabled = true;
+			var r,r1 = func( ..table.unpackArgs(t) );
+			if( r1 !== false) btnEvent.disabled = false;
+		}
+		var tbb = this.add( name, funcom, num);
+		this.add();
+		//var tbb = this.toolbar.add(name, funcom, num);
+		//this.toolbar.add()
+		return tbb;
+	}
+	
+	btnAdd = function(func, name = "新增", ...){
+		return this.createButton( name, func, 1, ...)
+	}
+	btnEdit = function(func, name = "修改", ...){
+		return this.createButton( name, func, 2, ...);
+	}
+	btnDelete = function(func, name = "删除", ...){
+		return this.createButton( name, func, 3, ...);
+	}
+	btnSave = function(func, name = "保存", ...){
+		return this.createButton( name, func, 4, ...);
+	}
+	btnSearch = function(func, name = "查询", ...){
+		return this.createButton( name, func, 5, ...);
+	}
+	btnClose = function(func, name = "关闭", ...){
+		return this.createButton( name, func, 6, ...);
+	}
+	btnRefresh = function(func, name = "刷新", ...){
+		this.createButton( name, func, 7, ...);
+	}
+	btnCancel = function(func, name = "取消", ...){
+		this.createButton( name, func, 8, ...);
+	}
+	btnSetting = function(func, name = "设置", ...){
+		return this.createButton( name, func, 9, ...);
+	}
+	btnStart = function(func, name = "开始", ...){
+		return this.createButton( name, func, 10, ...);
+	}
+	btnPrint = function(func, name = "打印", ...){
+		return this.createButton( name, func, 11, ...);
+	}
+	btnStop = function(func, name = "暂停", ...){
+		return this.createButton( name, func, 12, ...);
+	}
+	btnOpenFolder = function(func, name = "打开文件夹", ...){
+		return this.createButton( name, func, 13, ...);
+	}
+	btnCloseFolder = function(func, name = "关闭文件夹", ...){
+		return this.createButton( name, func, 14, ...);
+	}
+	btnUp = function(func, name = "上移", ...){
+		return this.createButton( name, func, 15, ...);
+	}
+	btnDown = function(func, name = "下移", ...){
+		return this.createButton( name, func, 16, ...);
+	}
+	btnConfirm = function(func, name = "确定", ...){
+		return this.createButton( name, func, 17, ...);
+	}
+	btnRight = function(func, name = "向右", ...){
+		return this.createButton( name, func, 18, ...);
+	}
+	btnLeft = function(func, name = "向左", ...){
+		return this.createButton( name, func, 19, ...);
+	}
+}
+
+namespace toolbar {
+	import win.ui.toolbar;
+	win = ..win;
+}
+
+/*intellisense()
+win.ui.ctrl.toolbar = 工具条控件
+?win.ui.ctrl.toolbar = !toolbar.
+!toolbar.toolbar = !toolbar.
+!toolbar.add(标题,回调函数,图像索引,可选指定命令ID) = @.add(\n	"文字", \n	function (id) {\n\n	},1\n)
+!toolbar.add() = 添加一个分隔条
+!toolbar.hidebar("按钮名称",true) = 隐藏true，显示false
+!toolbar.enabled("按钮名称",true) = 禁用false,启用true
+!toolbar.createButton("按钮名称","func函数","图标索引","func函数参数") = 创建按钮,func函数执行过程中按钮将自动禁用,执行结束启用,如果func函数,返回值第二个参数为false,将禁用按钮
+!toolbar.btnAdd(func, "新增") = 新增按钮
+!toolbar.btnEdit(func,"修改") = 修改按钮
+!toolbar.btnDelete(func, "删除") = 删除按钮
+!toolbar.btnSave(.(func, "保存") = 保存按钮
+!toolbar.btnSearch(func, "查询") = 查询按钮
+!toolbar.btnClose(func, "关闭") = 关闭按钮
+!toolbar.btnRefresh(func, "刷新") = 刷新按钮
+!toolbar.btnCancel(func, "取消") = 取消按钮
+!toolbar.btnSetting(func, "设置") = 设置按钮
+!toolbar.btnStart(func, "开始") = 开始按钮
+!toolbar.btnPrint(func, "打印") = 打印按钮
+!toolbar.btnStop(func, "暂停") = 暂停按钮
+!toolbar.btnOpenFolder(func, "打开文件夹") = 打开文件夹按钮
+!toolbar.btnCloseFolder(func, "关闭文件夹") = 关闭文件夹按钮
+!toolbar.btnUp(func, "上移") = 上移
+!toolbar.btnDown(func, "下移") = 下移
+!toolbar.btnConfirm(func, "确定") = 确定
+!toolbar.btnRight(func, "向右") = 向右
+!toolbar.btnLeft(func, "向左") = 向左
+end intellisense*/

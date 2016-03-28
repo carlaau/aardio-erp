@@ -1,0 +1,135 @@
+import win.ui;
+/*DSG{{*/
+var winform = win.form(text="AAuto Form";right=284;bottom=262;border="dialog frame";exmode="none";max=false;mode="popup";parent=...)
+winform.add(
+cboIsUse={cls="combobox";left=214;top=161;right=269;bottom=185;edge=1;hscroll=1;items={"启用";"禁用"};mode="dropdownlist";tabstop=1;vscroll=1;z=18};
+cboParentId={cls="combobox";left=71;top=38;right=269;bottom=62;edge=1;hscroll=1;items={};mode="dropdownlist";tabstop=1;vscroll=1;z=11};
+groupbox={cls="groupbox";left=4;top=21;right=280;bottom=257;edge=1;z=1};
+static={cls="static";text="菜单名称";left=14;top=75;right=68;bottom=93;transparent=1;z=3};
+static2={cls="static";text="菜单路径";left=14;top=107;right=68;bottom=125;transparent=1;z=4};
+static3={cls="static";text="异动人";left=14;top=199;right=58;bottom=217;transparent=1;z=5};
+static4={cls="static";text="异动时间";left=14;top=231;right=68;bottom=249;transparent=1;z=6};
+static5={cls="static";text="上级菜单";left=15;top=42;right=69;bottom=60;transparent=1;z=7};
+static6={cls="static";text="同级排序";left=14;top=167;right=68;bottom=185;transparent=1;z=10};
+static7={cls="static";text="图标路径";left=14;top=137;right=68;bottom=155;transparent=1;z=15};
+static8={cls="static";text="状态";left=183;top=165;right=212;bottom=183;transparent=1;z=17};
+toolbar={cls="toolbar";text="工具条";left=0;top=-2;right=283;bottom=25;center=1;dl=1;dr=1;dt=1;edge=1;transparent=1;z=2};
+txtImagePath={cls="edit";left=71;top=129;right=269;bottom=155;autohscroll=false;autovscroll=false;edge=1;hidesel=1;tabstop=1;z=16};
+txtMenuName={cls="edit";left=71;top=68;right=269;bottom=94;autohscroll=false;autovscroll=false;edge=1;hidesel=1;tabstop=1;z=12};
+txtMenuPath={cls="edit";left=71;top=99;right=269;bottom=125;autohscroll=false;autovscroll=false;edge=1;hidesel=1;tabstop=1;z=13};
+txtSortIdStr={cls="edit";text="01";left=71;top=160;right=176;bottom=186;autohscroll=false;autovscroll=false;edge=1;hidesel=1;num=1;tabstop=1;z=14};
+txttrdate={cls="edit";left=71;top=223;right=269;bottom=249;autohscroll=false;autovscroll=false;edge=1;hidesel=1;readonly=1;z=9};
+txttruser={cls="edit";left=71;top=191;right=269;bottom=217;autohscroll=false;autovscroll=false;edge=1;hidesel=1;readonly=1;z=8}
+)
+/*}}*/
+
+var tlist,tmenuId;
+
+winform.btnSave = function(){
+	var SortId = (tonumber(winform.txtSortIdStr.text,10));
+	if(SortId > 99){
+		winform.msgbox("排序号范围: 0-99","提示")
+		return false; 
+	}
+	winform.txtSortIdStr.text = string.format("%02i", SortId)
+	var t = conn.getwinform(winform)
+	if( !#t["MenuName"] ){
+		winform.msgbox("菜单名称不能为空!","提示")
+		return false; 
+	}
+	t.IsUse = (t.IsUse="启用") ? "1" : "0";
+	var MenuId;
+	if(winform.parent.page.index){
+		MenuId = winform.parent.trow.MenuId;
+	}
+	t.ParentId = tmenuId[t.ParentId];//父级ID
+	MenuId = winform.parent.Edit ? MenuId : null;
+	t.MenuIdStr = ws.System.SystemMenu.getMenuIdStr(t.ParentId, MenuId);//完整菜单ID串 (,0,1,)
+	if(!#t.MenuIdStr){
+		winform.msgbox("无效上级菜单","提示")
+		return false; 
+	}
+	t.SortIdStr = ws.System.SystemMenu.getSortIdStr(t.ParentId,t.SortIdStr);
+	var ok,err;
+	if(winform.parent.Edit){//修改
+		var lastMenuIdStr = winform.parent.trow.MenuIdStr;
+		var lastSortIdStr = winform.parent.trow.SortIdStr;
+		var lastIsUse = winform.parent.trow.IsUse;
+		if(lastMenuIdStr == t.MenuIdStr && lastSortIdStr == t.SortIdStr && lastIsUse == t.IsUse){
+			ok,err= ws.System.SystemMenu.update(t, MenuId);
+		}
+		else {//上级菜单有变，需更新相应的下级菜单
+			var tsql = {};
+			table.push(tsql,ws.sql.getUpdateSql("SystemMenu", t, "MenuId = '" ++ MenuId ++ "'"));
+			var t1,t2,tab = ws.System.SystemMenu.getMenuList(lastMenuIdStr,"like");//菜单
+			for(i=1;#tab;1){
+				var tup = tab[i];//MenuId,MenuName,MenuIdStr,SortIdStr
+				var tchild = {};
+				if(lastMenuIdStr != t.MenuIdStr){
+					tchild.MenuIdStr = string.replace(tup.MenuIdStr,"^" ++ lastMenuIdStr,t.MenuIdStr,1);
+				}
+				if(lastSortIdStr != t.SortIdStr){
+					tchild.SortIdStr = string.replace(tup.SortIdStr,"^" ++ lastSortIdStr,t.SortIdStr,1);
+				}
+				tchild.IsUse = t.IsUse;
+				table.push(tsql,ws.sql.getUpdateSql("SystemMenu", tchild, "MenuId = '" ++ tup.MenuId ++ "'"));
+			}
+			ok,err= ws.System.transaction(tsql);
+		}
+	}
+	else {//新增
+		t["MenuId"] = ws.System.sp_getPrimaryKey("SystemMenu");
+		t.MenuIdStr += tostring(t["MenuId"]) ++ ",";//完整菜单ID串 (,0,1,5,)
+		ok,err= ws.System.SystemMenu.insert(t);
+	}
+	if(ok){
+		winform.msgbox("保存成功","提示")
+		winform.close();
+		winform.parent.page.search();
+	}else {
+		winform.msgbox("保存失败," ++ (err:""),"提示")
+	}
+}
+
+winform.load = function(){
+	win.delay(10);
+	winform.cboIsUse.selIndex = 1;
+	var MenuIdStr,sqlExp;
+	if(winform.parent.Edit){
+		MenuIdStr = winform.parent.trow.MenuIdStr;
+		sqlExp = "not like";
+	}elseif(winform.parent.page.index){
+		MenuIdStr = winform.parent.trow.MenuIdStr;
+		//sqlExp = "=";
+	}
+	tlist,tmenuId = ws.System.SystemMenu.getMenuList(MenuIdStr,sqlExp);//菜单
+	winform.cboParentId.items = tlist;
+	winform.cboParentId.selIndex = 1;
+	if(winform.parent.Edit){//修改
+		conn.setwinform(winform, winform.parent.trow);
+		winform.txtSortIdStr.text = string.match(winform.parent.trow.SortIdStrShow,"(\d+)");
+		var ParentId = winform.parent.trow.ParentId;
+		if(ParentId != "0"){
+			var ParentIdStr,err = ws.System.SystemMenu.getMenuIdStr(ParentId);//上级菜单ID串
+			if(!ParentIdStr){
+				winform.msgbox(err:"","提示");
+				winform.close();
+			}
+			winform.cboParentId.selText = ws.System.SystemMenu.formatMenuIdStr(ParentIdStr);
+		}
+	}else {
+		if(winform.parent.page.index){//新增子菜单
+			var MenuIdStrShow = winform.parent.trow.MenuIdStrShow;
+			winform.cboParentId.selText = MenuIdStrShow;
+		}
+	}
+	winform.txttrdate.text = ws.getServerTime();
+	winform.txttruser.text = tabLoginInfo["NickName"];
+}
+
+winform.toolbar.btnSave(winform.btnSave,"保存")
+winform.text = (winform.parent.Edit ? "修改" : "新增") ++ "系统菜单";
+winform.show();
+winform.load();
+win.loopMessage();
+return winform;

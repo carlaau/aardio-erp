@@ -1,0 +1,98 @@
+import win.ui;
+/*DSG{{*/
+var winform = win.form(text="AAuto Form";right=429;bottom=329;border="none";max=false;parent=...)
+winform.add()
+/*}}*/
+
+import web.layoutEx;
+import web.layout.behavior.login.buttons;
+import web.layout.behavior.login.selectRoad;
+import web.layout.behavior.login.password;
+
+var wbLayout,start,login;
+
+update = function(mainForm){
+	if(!_STUDIO_INVOKED){
+		var upUrl = thread.get("ahtmlServerUrl");
+		if(!#upUrl) return ; 
+		var Ver = carl.update.getVersion();//版本号
+		var updateUrl = upUrl + "/update/index.html?r=" + math.random();
+		var downUrl = upUrl + "/update/Erp.exe";
+		var u = carl.update(updateUrl, downUrl,"Erp.exe", mainForm, _CMDLINE );
+		return u.checkUpdate(Ver,true);//检查更新
+	}
+}
+
+start = function(){
+	var user = wbLayout.getEle("txtUserName").value;
+	var pwd = wbLayout.getEle("txtPwd").value;
+	if(!#user || !#pwd){
+		winform.msgbox("登录名或密码不能空!");
+		return false; 
+	}
+	var roadName = wbLayout.getEle("roadName").innerText;
+	conn.reg(wbLayout.getEle("cbreSart").state.checked);//是否开机运行
+	return user,pwd,roadName; 
+}
+
+login = function(user,pwd){
+	pwd = ws.System.SystemUser.encryptPwd(pwd);
+	var SystemUserId,err = ws.System.SystemUser.checkLogin(user,pwd);
+	if(!SystemUserId) return false,err; 
+	var tuser,err = ws.System.SystemUser.getUserInfo(SystemUserId);
+	return tuser,err;
+}
+
+//选择线路
+winform.selectRoad = function(roadName){
+	if(!#roadName) return ; 
+	var serverUrl;
+	var eles = wbLayout.$("li");
+	for(i=1;#eles;1){
+		var ele = eles[i];
+		if(ele.innerText == roadName){
+			serverUrl = ele.url;
+			break ;
+		}
+	}
+	winform.showRoad(roadName, serverUrl);
+}
+
+//显示线路
+winform.showRoad = function(roadName, serverUrl){
+	var ele = wbLayout.getEle("roadName");
+	ele.innerText = roadName;
+	ele.url = serverUrl;
+	thread.set("ahtmlServerUrl", serverUrl)//ahtml服务器URL
+}
+
+winform.btnLogin = function(){
+	var user,pwd,roadName = start();
+	if(!user) return false;
+	tabLoginInfo,err = login(user,pwd);
+	thread.set("tabLoginInfo", tabLoginInfo)
+	if(tabLoginInfo){
+		wbLayout.setEle("txtPwd","")
+		config.loginForm.roadName = roadName;
+		config.loginForm.ahtmlServerUrl = thread.get("ahtmlServerUrl");
+		config.loginForm.save();//自动保存HL界面值
+		winform.close();
+		loadcode("/res/Main/mainLayout.aardio")(roadName);
+	}else {
+		winform.msgbox("登录失败," ++ (err:""));
+	}
+}
+
+winform.text = config.__appName;
+wbLayout = web.layoutEx( winform, "/layout/login.html" );
+wbLayout.getEle("roadMenu").innerHTML = conn.getLayoutRoadMenu(config.__appRoad);//线路菜单
+wbLayout.setEle("cbreSart", true);//初始开机运行
+winform.selectRoad("外网");//初始线路
+wbLayout.bindConfig( config.loginForm );//开启自动保存
+winform.selectRoad( config.loginForm.roadName)//上次
+update(winform);//检查更新版本
+
+winform.show() 
+conn.deskQuick();
+win.loopMessage();
+return winform;

@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<project ver="10" name="ERP-aardio" libEmbed="true" icon="D:\AAuto\ProJect\ErpZjzxzg\favicon.ico" ui="win" output="Erp.exe" CompanyName="www.aardio.org" FileDescription="ERP系统" LegalCopyright="Copyright (C) carl 2014" ProductName="ERP" InternalName="ERP" FileVersion="1.0.0.03" ProductVersion="1.0.0.03" publishDir="/Publish/" dstrip="false">
+	<file name="main.aardio" path="default.main.aardio" comment="default.main.aardio"/>
+	<folder name="资源文件" path="res" embed="true">
+		<file name="version.txt" path="res\version.txt" comment="res\version.txt"/>
+		<folder name="Demo" path="res\Demo" comment="res\Demo" embed="false">
+			<file name="Report.aardio" path="res\Demo\Report.aardio" comment="res\Demo\Report.aardio"/>
+		</folder>
+		<folder name="Main" path="res\Main" comment="res\Main">
+			<file name="menu.aardio" path="res\Main\menu.aardio" comment="res\Main\menu.aardio"/>
+			<file name="mainLayout.aardio" path="res\Main\mainLayout.aardio" comment="res\Main\mainLayout.aardio"/>
+			<file name="loginLayout.aardio" path="res\Main\loginLayout.aardio" comment="res\Main\loginLayout.aardio"/>
+		</folder>
+		<folder name="System" path="res\System" comment="res\System">
+			<file name="UserAddEdit.aardio" path="res\System\UserAddEdit.aardio" comment="res\System\UserAddEdit.aardio"/>
+			<file name="User.aardio" path="res\System\User.aardio" comment="res\System\User.aardio"/>
+			<file name="MenuAddEdit.aardio" path="res\System\MenuAddEdit.aardio" comment="res\System\MenuAddEdit.aardio"/>
+			<file name="Menu.aardio" path="res\System\Menu.aardio" comment="res\System\Menu.aardio"/>
+			<file name="LimitMenu.aardio" path="res\System\LimitMenu.aardio" comment="res\System\LimitMenu.aardio"/>
+			<file name="Error.aardio" path="res\System\Error.aardio" comment="res\System\Error.aardio"/>
+			<file name="EditPwd.aardio" path="res\System\EditPwd.aardio" comment="res\System\EditPwd.aardio"/>
+		</folder>
+	</folder>
+	<folder name="layout" path="layout" comment="layout" embed="true">
+		<file name="titlebar.html" path="layout\titlebar.html" comment="layout\titlebar.html"/>
+		<file name="msgbox.html" path="layout\msgbox.html" comment="layout\msgbox.html"/>
+		<file name="main.html" path="layout\main.html" comment="layout\main.html"/>
+		<file name="login.html" path="layout\login.html" comment="layout\login.html"/>
+		<folder name="styles" path="layout\styles" comment="layout\styles" embed="false">
+			<file name="titlebar.css" path="layout\styles\titlebar.css" comment="layout\styles\titlebar.css"/>
+			<file name="msgbox.css" path="layout\styles\msgbox.css" comment="layout\styles\msgbox.css"/>
+			<file name="main.css" path="layout\styles\main.css" comment="layout\styles\main.css"/>
+			<file name="login.css" path="layout\styles\login.css" comment="layout\styles\login.css"/>
+			<folder name="images" path="layout\styles\images" comment="layout\styles\images" embed="false">
+				<file name="Unknown.png" path="layout\styles\images\Unknown.png" comment="layout\styles\images\Unknown.png"/>
+				<file name="System.png" path="layout\styles\images\System.png" comment="layout\styles\images\System.png"/>
+				<file name="Security.png" path="layout\styles\images\Security.png" comment="layout\styles\images\Security.png"/>
+				<file name="Search.png" path="layout\styles\images\Search.png" comment="layout\styles\images\Search.png"/>
+				<file name="Quartz.png" path="layout\styles\images\Quartz.png" comment="layout\styles\images\Quartz.png"/>
+				<file name="password.png" path="layout\styles\images\password.png" comment="layout\styles\images\password.png"/>
+				<file name="Numbers.png" path="layout\styles\images\Numbers.png" comment="layout\styles\images\Numbers.png"/>
+				<file name="Network.png" path="layout\styles\images\Network.png" comment="layout\styles\images\Network.png"/>
+				<file name="msgboxTest.png" path="layout\styles\images\msgboxTest.png" comment="layout\styles\images\msgboxTest.png"/>
+				<file name="msgboxErr.png" path="layout\styles\images\msgboxErr.png" comment="layout\styles\images\msgboxErr.png"/>
+				<file name="msgbox.png" path="layout\styles\images\msgbox.png" comment="layout\styles\images\msgbox.png"/>
+				<file name="loading.png" path="layout\styles\images\loading.png" comment="layout\styles\images\loading.png"/>
+				<file name="Keychain.png" path="layout\styles\images\Keychain.png" comment="layout\styles\images\Keychain.png"/>
+				<file name="Input-box.png" path="layout\styles\images\Input-box.png" comment="layout\styles\images\Input-box.png"/>
+				<file name="iDisk.png" path="layout\styles\images\iDisk.png" comment="layout\styles\images\iDisk.png"/>
+				<file name="Iconfactory.png" path="layout\styles\images\Iconfactory.png" comment="layout\styles\images\Iconfactory.png"/>
+				<file name="Home.png" path="layout\styles\images\Home.png" comment="layout\styles\images\Home.png"/>
+				<file name="GetInfo.png" path="layout\styles\images\GetInfo.png" comment="layout\styles\images\GetInfo.png"/>
+				<file name="Documents.png" path="layout\styles\images\Documents.png" comment="layout\styles\images\Documents.png"/>
+				<file name="bouncing-beach-ball.png" path="layout\styles\images\bouncing-beach-ball.png" comment="layout\styles\images\bouncing-beach-ball.png"/>
+				<folder name="qq" path="layout\styles\images\qq" comment="layout\styles\images\qq">
+					<file name="switch_single_normal.png" path="layout\styles\images\qq\switch_single_normal.png" comment="layout\styles\images\qq\switch_single_normal.png"/>
+					<file name="switch_single_hover.png" path="layout\styles\images\qq\switch_single_hover.png" comment="layout\styles\images\qq\switch_single_hover.png"/>
+					<file name="switch_single_down.png" path="layout\styles\images\qq\switch_single_down.png" comment="layout\styles\images\qq\switch_single_down.png"/>
+					<file name="noavatar_middle.gif" path="layout\styles\images\qq\noavatar_middle.gif" comment="layout\styles\images\qq\noavatar_middle.gif"/>
+					<file name="login_head_bkg.png" path="layout\styles\images\qq\login_head_bkg.png" comment="layout\styles\images\qq\login_head_bkg.png"/>
+					<file name="edit_frame_normal_reversed.png" path="layout\styles\images\qq\edit_frame_normal_reversed.png" comment="layout\styles\images\qq\edit_frame_normal_reversed.png"/>
+					<file name="edit_frame_normal.png" path="layout\styles\images\qq\edit_frame_normal.png" comment="layout\styles\images\qq\edit_frame_normal.png"/>
+					<file name="edit_frame_hover_reversed.png" path="layout\styles\images\qq\edit_frame_hover_reversed.png" comment="layout\styles\images\qq\edit_frame_hover_reversed.png"/>
+					<file name="edit_frame_hover.png" path="layout\styles\images\qq\edit_frame_hover.png" comment="layout\styles\images\qq\edit_frame_hover.png"/>
+					<file name="edit_frame_down_reversed.png" path="layout\styles\images\qq\edit_frame_down_reversed.png" comment="layout\styles\images\qq\edit_frame_down_reversed.png"/>
+					<file name="edit_frame_down.png" path="layout\styles\images\qq\edit_frame_down.png" comment="layout\styles\images\qq\edit_frame_down.png"/>
+					<file name="corner_right_normal_down.png" path="layout\styles\images\qq\corner_right_normal_down.png" comment="layout\styles\images\qq\corner_right_normal_down.png"/>
+					<file name="corner_right_normal_breath.png" path="layout\styles\images\qq\corner_right_normal_breath.png" comment="layout\styles\images\qq\corner_right_normal_breath.png"/>
+					<file name="corner_right_hover.png" path="layout\styles\images\qq\corner_right_hover.png" comment="layout\styles\images\qq\corner_right_hover.png"/>
+					<file name="checkbox_tick_pushed.png" path="layout\styles\images\qq\checkbox_tick_pushed.png" comment="layout\styles\images\qq\checkbox_tick_pushed.png"/>
+					<file name="checkbox_tick_normal.png" path="layout\styles\images\qq\checkbox_tick_normal.png" comment="layout\styles\images\qq\checkbox_tick_normal.png"/>
+					<file name="checkbox_tick_highlight.png" path="layout\styles\images\qq\checkbox_tick_highlight.png" comment="layout\styles\images\qq\checkbox_tick_highlight.png"/>
+					<file name="checkbox_pushed.png" path="layout\styles\images\qq\checkbox_pushed.png" comment="layout\styles\images\qq\checkbox_pushed.png"/>
+					<file name="checkbox_normal.png" path="layout\styles\images\qq\checkbox_normal.png" comment="layout\styles\images\qq\checkbox_normal.png"/>
+					<file name="checkbox_hightlight.png" path="layout\styles\images\qq\checkbox_hightlight.png" comment="layout\styles\images\qq\checkbox_hightlight.png"/>
+					<file name="button_login_normal.png" path="layout\styles\images\qq\button_login_normal.png" comment="layout\styles\images\qq\button_login_normal.png"/>
+					<file name="button_login_hover.png" path="layout\styles\images\qq\button_login_hover.png" comment="layout\styles\images\qq\button_login_hover.png"/>
+					<file name="button_login_down.png" path="layout\styles\images\qq\button_login_down.png" comment="layout\styles\images\qq\button_login_down.png"/>
+					<file name="btn_set_press.png" path="layout\styles\images\qq\btn_set_press.png" comment="layout\styles\images\qq\btn_set_press.png"/>
+					<file name="btn_set_normal.png" path="layout\styles\images\qq\btn_set_normal.png" comment="layout\styles\images\qq\btn_set_normal.png"/>
+					<file name="btn_set_hover.png" path="layout\styles\images\qq\btn_set_hover.png" comment="layout\styles\images\qq\btn_set_hover.png"/>
+					<file name="btn_restore_normal.png" path="layout\styles\images\qq\btn_restore_normal.png" comment="layout\styles\images\qq\btn_restore_normal.png"/>
+					<file name="btn_restore_highlight.png" path="layout\styles\images\qq\btn_restore_highlight.png" comment="layout\styles\images\qq\btn_restore_highlight.png"/>
+					<file name="btn_restore_down.png" path="layout\styles\images\qq\btn_restore_down.png" comment="layout\styles\images\qq\btn_restore_down.png"/>
+					<file name="btn_mini_normal.png" path="layout\styles\images\qq\btn_mini_normal.png" comment="layout\styles\images\qq\btn_mini_normal.png"/>
+					<file name="btn_mini_highlight.png" path="layout\styles\images\qq\btn_mini_highlight.png" comment="layout\styles\images\qq\btn_mini_highlight.png"/>
+					<file name="btn_mini_down.png" path="layout\styles\images\qq\btn_mini_down.png" comment="layout\styles\images\qq\btn_mini_down.png"/>
+					<file name="btn_max_normal.png" path="layout\styles\images\qq\btn_max_normal.png" comment="layout\styles\images\qq\btn_max_normal.png"/>
+					<file name="btn_max_highlight.png" path="layout\styles\images\qq\btn_max_highlight.png" comment="layout\styles\images\qq\btn_max_highlight.png"/>
+					<file name="btn_max_down.png" path="layout\styles\images\qq\btn_max_down.png" comment="layout\styles\images\qq\btn_max_down.png"/>
+					<file name="btn_close_normal.png" path="layout\styles\images\qq\btn_close_normal.png" comment="layout\styles\images\qq\btn_close_normal.png"/>
+					<file name="btn_close_highlight.png" path="layout\styles\images\qq\btn_close_highlight.png" comment="layout\styles\images\qq\btn_close_highlight.png"/>
+					<file name="btn_close_down.png" path="layout\styles\images\qq\btn_close_down.png" comment="layout\styles\images\qq\btn_close_down.png"/>
+					<file name="afternoon.jpg" path="layout\styles\images\qq\afternoon.jpg" comment="layout\styles\images\qq\afternoon.jpg"/>
+				</folder>
+			</folder>
+		</folder>
+	</folder>
+</project>

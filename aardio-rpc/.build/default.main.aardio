@@ -1,0 +1,9 @@
+//此触发器在生成EXE以后执行
+import ide;
+import fsys; 
+
+//把main.aau复制到目标目录
+var pubMain = io.joinpath(ide.getPublisDir(),"/main.aardio");
+if( !..io.exist(pubMain) ){
+	//fsys.copy( io.joinpath( ide.getProjectDir(),"/main.aardio"),pubMain)
+}

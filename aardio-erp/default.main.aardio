@@ -1,0 +1,21 @@
+﻿
+import win.ui;
+import config;
+
+global.onError = function( err,over ){ 
+    if(!over){
+        import debug;
+        var stack = debug.traceback(,"调用栈",3);
+    }
+    ws.System.Errlog.onError(e);
+    if( _STUDIO_INVOKED ) return err; 
+}
+
+//定义全局变量
+{
+	tabLoginInfo = {};		//登录用户信息
+	tabSystemFormMenu = {};	//菜单权限
+	mainFormTabCtrl = null;	//主界面选项卡
+}
+
+loadcodex("\res\Main\loginLayout.aardio");

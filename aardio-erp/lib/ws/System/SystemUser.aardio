@@ -1,0 +1,84 @@
+﻿
+namespace ws.System.SystemUser
+
+import ws;
+import ws.sql;
+import ws.System;
+import crypt.des;
+import crypt.bin;
+
+string = ..string;
+table = ..table;
+
+var webservice = ws.System;
+var tablename = "SystemUser"
+
+/*intellisense(ws.System.SystemUser)*/
+
+getPrimaryKey = function(){//返回主键
+	return ws.System.sp_getPrimaryKey(tablename); 
+}
+
+insert = function(tab){
+	var sql = ws.sql.getInsertSql(tablename, tab);
+	return webservice.exec(sql);
+}
+
+update = function(tab, Id){
+	var sql = ws.sql.getUpdateSql(tablename, tab, "SystemUserId = '" + Id + "'");
+	var ok,err = webservice.exec(sql)
+	return ok,err;
+}
+
+checkLogin = function(loginName, password){
+	loginName = string.replace(loginName, "'", "''");
+	password = string.replace(password, "'", "''");
+	var sql = "select SystemUserId,IsEnable from " + tablename + " where loginName = '" + loginName + "' and password = '" + password + "'";
+	var t,err = webservice.getTable(sql);
+	if( !t ){ return null,"网络连接出错" ++ (err:""); }
+	if( !#t ){ return null,"帐号密码错误" ++ (err:""); }
+	if( t[1]["IsEnable"] != "1" ){ return null,"此用户已被禁用"; } 
+	..math.randomize();
+	..thread.set("ApiToken", null);
+	var token = string.random(32);
+	var SystemUserId = t[1]["SystemUserId"];
+	var ok,err = update({token = token}, SystemUserId);
+	if(!ok) return null,err;
+	..thread.set("ApiToken", token);
+	return SystemUserId;
+}
+
+getUserInfo = function(userId){
+	userId = string.replace(userId, "'", "''");
+	var sql = "select SystemUserId,LoginName,NickName,PassWord,CreateTime,IsEnable,IsAdmin from  " + tablename + "  where SystemUserId = '" + userId + "'";
+	var t,err = webservice.getTable(sql);
+	if( !t ){ return null,err; }
+	if( !#t ){ return null,"无此用户"; }
+	return t[1];
+}
+
+//返回需要权限控制的所有用户
+getLimitUserList = function(){
+	var sql = "SELECT SystemUserId,LoginName,NickName FROM SystemUser where IsEnable='1' and LoginName!='admin' order by LoginName";
+	var t,err = webservice.getTable(sql);
+	if( !t ){ return null,err; }
+	return t;
+}
+
+encryptPwd = function(pwd){//加密
+	var des = crypt.des();
+	des.setPassword("aautoerp")
+	pwd = des.encrypt(pwd);
+	pwd = crypt.bin.encodeBase64(pwd);
+	return pwd;
+}
+
+decryptPwd = function(pwd){//解密
+	var des = crypt.des();
+	des.setPassword("aautoerp");
+	pwd = crypt.bin.decodeBase64(pwd);
+	pwd = des.decrypt(pwd);
+	return pwd;
+}
+
+/*end intellisense*/

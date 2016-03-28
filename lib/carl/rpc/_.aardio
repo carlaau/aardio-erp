@@ -1,0 +1,28 @@
+﻿
+namespace carl.rpc
+
+format = function(t){
+	var min,max = ..table.range(t);
+	for(i=1;max;1){
+		if(t[i] === null){
+			t[i] = "null";
+		}elseif(t[i] === true){
+			t[i] = "true";
+		}elseif(t[i] === false){
+			t[i] = "false";
+		}
+	}
+}
+
+unformat = function(t){
+	var min,max = ..table.range(t);
+	for(i=1;max;1){
+		if(t[i] === "null"){
+			t[i] = null;
+		}elseif(t[i] === "true"){
+			t[i] = true;
+		}elseif(t[i] === "false"){
+			t[i] = false;
+		}
+	}
+}

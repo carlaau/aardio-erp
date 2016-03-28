@@ -1,0 +1,95 @@
+﻿html,body{
+    margin:0; /*去掉默认的页面边距*/
+    height:100%;/*因为HTML元素的高度默认是按需增加的,所有需要显示指定根节点高度*/
+    background:#fff;/*网页背景色*/
+    overflow:hidden;/*避免出现滚动条*/
+	font-family: '宋体';
+	border: 1px solid #4B5F6B;
+}
+
+/*最大化后body会自动添加maximize属性,如果是圆角界面可以在这里移除圆角*/
+body[maximize]{ 
+	border-radius:0;
+}
+
+body[maximize] #header{
+	border-radius:0;
+}
+
+#header{
+    height:32px;
+    background:rgb(52,152,220);
+    cursor:default;
+    behavior:windowCommand;
+    overflow:hidden;/*清除浮动*/
+}
+
+#header .title-bar{
+    margin-right:95px;
+    padding-left:15px;
+	padding-top:2px;
+    height:28px;
+    line-height: 28px;
+	display: block;
+    color:#fff; 
+} 
+
+#header .titlebox{  
+    width:max-intrinsic; 
+    height:28px; 
+    float:right; 
+    margin-right:8px; 
+    overflow-x:hidden;
+}
+
+#header .titlebox a{ 
+    display:inline-block; //显示为块节点 
+    width:max-intrinsic; 
+    height:14px;
+    font-family:"Marlett";/*该字体显示按钮符号*/  
+    font-size:14px;
+    padding:4px;
+    color:#fff; 
+    cursor:default; 
+}
+
+/*CSS选择器中,方括号指定节点拥有的属性*/
+#header .titlebox a[command]:hover{ 
+    background:#6ebccf; 
+}
+
+#header .titlebox a[command]:active{ 
+    background:#FF0000; 
+} 
+
+#header a[command="window-restore"]{ 
+    content:"2";/*Marlett字体为还原按钮符号*/ 
+} 
+
+#header .window-menu{ 
+  display:block;  
+  float:right;
+  behavior:popup-menu; 
+  width:max-intrinsic; 
+  height:14px;
+  font-family:"Marlett";/*该字体显示按钮符号*/  
+  font-size:14px;
+  padding:4px;
+  color:#fff;
+}
+
+#header .window-menu:hover{
+  background:#6ebccf;
+}
+
+#header .window-menu:owns-popup /*菜单已弹出*/
+{ 
+    background-color: #FF0000;
+    color: #FFFFFF;
+}
+
+/*这里下面的 > 不要换成空格，避免子菜单被绑定多次behavior导致事件被触发多次*/
+#header .window-menu  > menu{
+    behavior:~ "titleMenu";   
+}
+

@@ -1,0 +1,152 @@
+//select 下拉框
+namespace carl.ctrl.select{}
+
+import util.metaProperty;
+import win.ui.ctrl; 
+
+win.ui.ctrl.select = class {
+	ctor(parent,tParam){
+	
+/*DSG{{*/
+this = win.form(text="aardio form";right=100;bottom=25;border="none";exmode="none";mode="child";parent=parent;tParam=tParam)
+this.add(
+combobox={cls="combobox";left=0;top=0;right=101;bottom=25;ah=1;aw=1;db=1;dl=1;dr=1;dt=1;edge=1;hscroll=1;items={};mode="dropdownlist";vscroll=1;z=1}
+)
+/*}}*/
+
+		this.valueId = "value";
+		this.textId = "text";
+		..table.mixin(this@, _metaProperty);
+	};
+	
+	onCreate = function(){
+		this.combobox.oncommand = function(id,event){
+			if(event == 0x9/*_CBN_SELENDOK*/){
+				if(this.selectChangeOk) this.selectChangeOk(id,event);
+			}
+		}
+		this.clear();
+	};
+	
+	add = function(k,v,row){
+		if(!k || !v) return ; 
+		this.combobox.add(tostring(v));
+		..table.push(this.tabValue,k);
+		..table.push(this.tabText,v);
+		var t = {};
+		if(type(row) == type.table) ..table.mixin(t,row);
+		t[this.valueId] = k;
+		t[this.textId] = v;
+		..table.push(this.table,t);
+	}
+
+	findValue = function(v){
+		if(!v) return ; 
+		return ..table.find(this.tabValue,v); 	
+	}
+	
+	findText = function(v){
+		if(!v) return ; 
+		return ..table.find(this.tabText,v); 	
+	}
+	
+	find = function(v){
+		return this.findValue(v) : this.findText(v); 
+	}
+	
+	clear = function(){
+		this.tabValue = {};
+		this.tabText = {};
+		this.table = {};
+		this.combobox.clear();
+	}
+}
+
+namespace win.ui.ctrl.select{
+	win = ..win;
+	
+	_metaProperty = ..util.metaProperty(
+	
+		items = {
+			_get = function(){ 
+				return owner.table;
+			}
+			_set = function( t ){
+				for(i=1;#t;1){
+					var row = t[i];
+					if(type(row) != type.table) error("参数无效",2)
+					var k = row[[owner.valueId]] : row[1];
+					var v = row[[owner.textId]] : row[2];
+					owner.add(k,v,row);
+				}
+				owner.selIndex = 1;
+			}
+		};
+		
+		selIndex = {
+			_get = function(){ 
+				return owner.combobox.selIndex;
+			}
+			_set = function( v ){
+				if(v){
+					owner.combobox.selIndex = v;
+					if(owner.change && owner.selectChangeOk) owner.selectChangeOk();
+				}
+			}
+		};
+		
+		setValue = {
+			_set = function( v ){
+				owner.selIndex = ..table.find(owner.tabValue,v);
+			}
+		};
+		
+		getValue = {
+			_get = function(){ 
+				return owner.tabValue[[owner.combobox.selIndex]];
+			}
+		};
+		
+		setText = {
+			_set = function( v ){
+				owner.selIndex = ..table.find(owner.tabText,v);
+			}
+		};
+
+		getText = {
+			_get = function(){ 
+				return owner.tabText[[owner.combobox.selIndex]];
+			}
+		};
+		
+		getItemData = {
+			_get = function(){ 
+				return owner.table[[owner.combobox.selIndex]];
+			}
+		};
+	)
+}
+
+/*intellisense()
+win.ui.ctrl.select = select下拉选项控件
+win.ui.ctrl.select() = select下拉选项控件
+?win.ui.ctrl.select = !select.
+!select.items = 获取或设置table对像数据源(设置时是追加模式);格式如:\n{\n    {value="值1";text="内容1"};\n    {value="值2";text="内容2"}\n}
+!select.setValue = 设置value值
+!select.getValue = 获取value值
+!select.setText = 设置显示text值
+!select.getText = 获取显示text值
+!select.valueId = @.valueId = "value";//绑定数据源value值字段
+!select.textId = @.textId = "text";//绑定数据源text值字段
+!select.selIndex = 获取或设置选中的选项序ID,
+!select.add(value,text) = 添加内容到选项,参数一:value值,参数二:text显示内容
+!select.find() = 精确查找内容,先找value值,如果没有再找text值,返回选项序ID
+!select.findValue() = 精确查找value值,是否存在,返回选项序ID
+!select.findText() = 精确查找显示内容text值,是否存在,返回选项序ID
+!select.selectChangeOk = @.selectChangeOk = function(){\n	__\n}//下拉框值改变后回调函数
+!select.change = @.change = true;//设置true后,对这四个属性items,setValue,setText,selIndex附值后,将会自动触发selectChangeOk()函数
+!select.clear() = 清空所有项
+!select.getItemData = 获取选中项数据集table对像
+!select.combobox = 原生win.ui.ctrl.combobox控件对像
+!select.combobox = !combobox.
+end intellisense*/

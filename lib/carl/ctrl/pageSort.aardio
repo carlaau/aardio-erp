@@ -1,0 +1,107 @@
+//pageSort 列名排序
+import win.ui;
+import carl.ctrl;
+import fsys;
+/*DSG{{*/
+var winform = win.form(text="自定义设置列名";right=305;bottom=325;border="dialog frame";exmode="toolwindow";max=false;min=false)
+winform.add(
+lvex={cls="listviewex";text="listview扩展控件";left=1;top=26;right=305;bottom=325;db=1;dl=1;dr=1;dt=1;edge=1;transparent=1;z=2};
+toolbar={cls="toolbar";text="工具条";left=0;top=-2;right=308;bottom=25;center=1;dl=1;dr=1;dt=1;edge=1;transparent=1;z=1}
+)
+/*}}*/
+
+var sortCommand,showList,tabSort,tabSortAll,save;;
+var form = ...;
+fsys.createDir("/config/")
+winform.lvex.isSort = false;
+winform.listview = winform.lvex.getListview();
+
+var tabhead = {
+	{key = "Show";name = "是否显示";len = 60};
+	{key = "ListName";name = "列名称";len = 150};
+	{key = "rowId";name = "排序号";len = 50};
+}
+
+showList = function(tab){
+	winform.lvex.clearRow();
+	for(i,t in tab){
+		if((t.len || (t.len<=0 && t.s !== null)) && t.key != "rowId"){
+			var index = winform.lvex.addItem("");
+			winform.lvex.set("ListName",index,t.name)
+			winform.lvex.set("rowId",index,index)
+			if(t.s !== false) winform.listview.setChecked(index);
+		}
+	}
+}
+
+sortCommand = function(str){
+	var text1,text2,index2,check1,check2;
+	for(index1=1;winform.listview.count;1){
+		if( winform.listview.getSelected(index1) ){
+			text1 = winform.lvex.get(index1,"ListName");
+			if(str == 1){//上移
+				index2 = index1-1;
+			}else {
+				index2 = index1+1;
+			}
+			if(index2 < 1 || index2 > winform.listview.count) break ;
+			text2 = winform.lvex.get(index2,"ListName");
+			check1 = winform.listview.getChecked(index1);
+			check2 = winform.listview.getChecked(index2);
+			winform.lvex.set("ListName",index2,text1);
+			winform.lvex.set("ListName",index1,text2);
+			winform.listview.setChecked(index2,check1);
+			winform.listview.setChecked(index1,check2);
+			winform.listview.setSelected(index2);
+			winform.listview.setSelected(index1,false);
+			winform.listview.selIndex = index2;
+			winform.listview.ensureVisible();
+			break ;
+		}
+	}
+}
+
+save = function(tab){
+	tabSortAll[form.ResName] = tab;
+	string.save(form.sortFilePath, table.tostring(tabSortAll))
+	form.lvex.clearAll();
+	form.load()
+}
+
+winform.btnUp = function(){
+	sortCommand(1);
+}
+
+winform.btnDown = function(){
+	sortCommand(2);
+}
+
+winform.btnDefault = function(){
+	showList(form.table);
+	save();
+}
+
+winform.btnSave = function(){
+	tabSort = {}
+	for(index=1;winform.listview.count;1){
+		var s = winform.listview.getChecked(index);
+		var n = winform.lvex.get(index,"ListName");
+		table.push(tabSort,{s=s;n=n});
+	}
+	save(tabSort)
+}
+
+winform.load = function(){
+	winform.lvex.addHead(tabhead);//加载列名
+	tabSort,tabSortAll = form.loadSort();//加载本地列名排序表
+	showList(tabSort);
+}
+
+winform.toolbar.btnSave(winform.btnSave,"保存")
+winform.toolbar.btnUp(winform.btnUp, "上移")
+winform.toolbar.btnDown(winform.btnDown, "下移")
+winform.toolbar.btnRefresh(winform.btnDefault, "默认设置")
+winform.show()
+winform.load();
+win.loopMessage();
+return winform; 

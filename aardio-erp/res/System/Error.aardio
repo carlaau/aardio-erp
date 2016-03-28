@@ -1,0 +1,40 @@
+import win.ui;
+/*DSG{{*/
+var winform = win.form(text="loading...";right=800;bottom=400;border="dialog frame";parent=...)
+winform.add(
+page={cls="page";text="整页控件";left=0;top=27;right=800;bottom=400;center=1;db=1;dl=1;dr=1;dt=1;edge=1;transparent=1;z=1};
+toolbar={cls="toolbar";text="工具条";left=0;top=-2;right=800;bottom=25;center=1;dl=1;dr=1;dt=1;edge=1;transparent=1;z=2}
+)
+/*}}*/
+
+winform.listview = winform.page.listview();
+winform.lvEx = winform.page.listviewEx();
+winform.listview.onnotify = function(id,code,ptr){
+    return winform.lvEx.openonnotify(id,code,ptr)//默认菜单,排序
+}
+
+winform.page.webService = ws.System;
+winform.page.sql = "select Id,username,ver,err,dtime from errlog"
+winform.page.orderby = "id desc";
+winform.page.table = {
+	{key = "rowId";name = "序号";len = 50};
+	{key = "username";name = "用户姓名";len = 80};
+	{key = "ver";name = "版本";len = 50};
+	{key = "err";name = "错误内容";len = 650};
+	{key = "dtime";name = "错误时间";len = 130};
+	{key = "Id";name = "主键ID";len = 0};
+}
+winform.btnSearch = function(){
+	winform.page.search();
+	win.clip.write(winform.page.lastSql)
+}
+
+winform.load = function(){
+	winform.page.load();//显示首页
+}
+
+winform.toolbar.btnSearch(winform.btnSearch, "查询")
+
+winform.show()
+//win.loopMessage();
+return winform;

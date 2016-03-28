@@ -1,0 +1,58 @@
+﻿import win.ui;
+import win.clip;
+import string.html;
+import web.layoutEx;
+/*DSG{{*/
+var winform = ..win.form(text="AAuto Form";right=250;bottom=170;border="none";max=false;min=false;parent=...)
+winform.add()
+/*}}*/
+
+var form,msg,title,style = ...;
+winform.text = title : "提示";
+
+msg = string.replace(msg:"",'\n',"<br>")
+msg = string.html.toText(msg);
+msg = string.html.fromText(msg);
+
+winform.wndproc = function(hwnd,message,wParam,lParam){
+	if( message == 0x100/*_WM_KEYDOWN*/ && (wParam == 0xD/*_VK_ENTER*/ || wParam == 0x20/*_VK_SPACE*/)) { 
+		winform.close()
+	}
+}
+
+winform.reghotkey(function(id,mod,vk){
+	win.clip.write(string.html.toText(msg));
+}
+,0x2/*_MOD_CONTROL*/,'C'#);
+
+var wbLayout = web.layoutEx( winform,"/layout/msgbox.html",false );
+wbLayout.getEle("msg").innerHTML = msg;
+
+var str1,str2,str3,str4;
+if( style == 0x10/*_MB_ICONHAND*/){//16 msgboxErr
+	str1,str2,str3,str4 = "none","none","","none";
+}
+elseif( style == 0x1|0x20 /*_MB_OKCANCEL|_MB_ICONQUESTION*/){//33 msgboxTest
+	str1,str2,str3,str4 = "none","","none","";
+}
+else {
+	str1,str2,str3,str4 = "","none","none","none";
+}
+wbLayout.getEle("msgbox").style.display = str1;
+wbLayout.getEle("msgboxTest").style.display = str2;
+wbLayout.getEle("msgboxErr").style.display = str3;
+wbLayout.getEle("Cancel").style.display = str4;
+
+var dt = 1;
+if(#msg>=300){
+	dt = 1.2;
+}elseif(#msg>=90){
+	dt = 1.1;
+}
+winform.right = winform.right * dt;
+winform.bottom = winform.bottom * dt;
+
+winform.show();
+if(form) winform.doModal(form);
+//win.loopMessage();
+return winform.msg;//确定：1 

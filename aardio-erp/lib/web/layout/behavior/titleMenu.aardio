@@ -1,0 +1,51 @@
+﻿
+namespace web.layout.behavior.titleMenu
+	
+onMenuItemClick =  {
+
+	// 事件可以是一个函数或列表,如果是列表键名匹配节点的id或name属性 
+	exit = function (ltTarget,ltOwner,reason,behaviorParams) {
+		ltOwner.getForm().close();
+	}
+	
+	//匹配不到id的节点会触发default函数*/
+	default = function (ltTarget,ltOwner,reason,behaviorParams) {
+		var ltPopupOwner = ..web.layout.element( behaviorParams.he );//这是弹出菜单的按钮节点
+		ltOwner.getForm().msgbox( ltTarget.innerText,"提示" )
+	}
+	
+	update = function(ltTarget,ltOwner,reason,behaviorParams){
+		var winform = ltOwner.getForm();
+		var ok = ..update(winform);//检查更新版本
+		if(!ok){
+			winform.msgbox("您已是最新版!","提示")
+		}
+	}
+	
+	//访问主页
+	website = function(ltTarget,ltOwner,reason,behaviorParams){
+		..process.execute(..thread.get("ahtmlServerUrl"));
+	}
+	
+	editPwd = function(ltTarget,ltOwner,reason,behaviorParams){
+		..mainForm.loadForm("\res\System\EditPwd.aardio");
+	}
+	
+	//重载我的权限
+	limit = function(ltTarget,ltOwner,reason,behaviorParams){
+		if( ..reStartMainLimit() ){
+			..mainForm.msgbox("重载成功","提示")
+		}
+	}
+	
+	openConsole = function(ltTarget,ltOwner,reason,behaviorParams){
+		var text = ltTarget.innerText;
+		if(text == "打开控制台"){
+			ltTarget.innerText = "关闭控制台"
+			..io.open();
+		}else {
+			ltTarget.innerText = "打开控制台"
+			..io.close()
+		}
+	}
+}

@@ -1,0 +1,116 @@
+
+if( !request ){
+
+	/*
+	创建一个兼容FastCGI接口的简单Web服务器，如果已经在Web服务器环境下这段可以省略。
+	*/
+	import fsys.log;
+	import wsock.tcp.simpleHttpServer;
+	import process;
+	import console;
+	
+	global.onError = function( err,over ){ 
+    	if(!over){
+        	import debug;
+        	var stack = debug.traceback(,"调用栈",3);
+        	err =  ..string.concat(err,'\n',stack);
+    	}
+    	fsys.log.print( err );
+	} 
+
+	var server = wsock.tcp.simpleHttpServer("127.0.0.1",/*8081*/);
+	console.setTitle("aardio rpc服务器已启动 " + server.getUrl() ); 
+	process.execute( server.getUrl()  )
+	
+	server.run(
+		function(response,request){
+			response.loadcode( request.path ); //参数可以省略
+		} 	
+	);
+	
+	return;
+}
+
+?>
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />  
+    <title>aardio rpc</title>
+</head>
+<body style="font-size:14px;word-wrap: break-word;word-break: normal;font-family:宋体">
+<a target='_blank' href='/rpc.aardio'>查看RPC服务运行情况</a><br>
+<a target='_blank' href='http://www.aardio.org'>aardio rpc技术支持论坛</a> <br><br>
+
+文件说明:<br>
+\rpc.aardio RPC服务端首页<br>
+\config.aardio 配置文件<br>
+\functions.aardio 自定义函数<br>
+\sqlhelper.aardio 数据库操作类<br><br>
+
+IDE环境测试步骤<br>
+1.在aardio10 打开本工程直接按F5运行<br>
+2.运行以下例子<br><br>
+
+正式服务端架设步骤<br>
+1.在aardio10 新建工程,选择FastCGI服务端,并在main.aardio文件中加载以下4个库<br>
+<font color="#0000ff">import</font><font color="#000000"> carl.rpc.server;</font><br>
+<font color="#0000ff">import</font><font color="#000000"> carl.mssql;</font><br>
+<font color="#0000ff">import</font><font color="#000000"> carl.mysql;</font><br>
+<font color="#0000ff">import</font><font color="#000000"> carl.oracle;</font><br>
+然后发布成aardio-cgi.exe程序<br>
+2.架设IIS网站,并添加模块映射,指定aardio-cgi.exe<br>
+3.发布本工程aardio-rpc,IIS网站目录指向发布后的Publish文件夹<br>
+4.运行以下例子<br>
+<br>
+客户端运用例子:<br>
+<font face="新宋体"><font color="#0000ff">import</font><font color="#000000"> console<br>
+</font><font color="#0000ff">import</font><font color="#000000"> carl.rpc.client;<br>
+<br>
+console.open()<br>
+<br>
+</font><font color="#0000ff">var</font><font color="#000000"> serverUrl = </font><font color="#800000">"http://<?= request.host?>/rpc.aardio"</font><font color="#000000">;</font><font color="#008000">//rpc服务端地址<br>
+</font><font color="#000000"><br>
+</font><font color="#008000">/*<br>
+RSA公钥，留空不加密,<br>
+需要配置服务端 /config.aardio 文件<br>
+*/</font><font color="#000000"><br>
+</font><font color="#0000ff">var</font><font color="#000000"> rsaPublicKey = </font><font color="#008000">/*<br>
+BgIAAACkAABSU0ExAAQAAAEAAQDve7UdKeI35NfLa8JkE4YQsxwKNCeE/OwAsqwd<br>
+iVv/g4I0Lay5DupUhM8j8DHPePg6TFiDQ2APSaSRx5hiA/lrDlfX2UBltJV+Hzl8<br>
+lxhj/wChQl8+7A9I6IvcyjqCzwZMRllVj5cOUFouxJJV/PqemQf5n+vQJ90V2B6F<br>
+kCnjxg==<br>
+*/</font><font color="#000000"><br>
+<br>
+</font><font color="#0000ff">var</font><font color="#000000"> rpcClient = carl.rpc.client(serverUrl, rsaPublicKey);<br>
+<br>
+</font><font color="#0000ff">var</font><font color="#000000"> serverTime,err = rpcClient.getServerTime();<br>
+console.log(</font><font color="#800000">"服务端getServerTime返回值"</font><font color="#000000">,serverTime,err);<br>
+<br>
+console.log(</font><font color="#800000">"服务端funTest返回值"</font><font color="#000000">,rpcClient.funTest(</font><font color="#800000">"参数1"</font><font color="#000000">,{a=3},</font><font color="#0000ff">true</font><font color="#000000">,</font><font color="#0000ff">false</font><font color="#000000">));<br>
+<br>
+console.log(</font><font color="#800000">"服务端函数不存在"</font><font color="#000000">,rpcClient.abcd());<br>
+<br>
+</font><font color="#0000ff">var</font><font color="#000000"> tab,err = rpcClient.getTable(</font><font color="#800000">"select * from UserInfo"</font><font color="#000000">)</font><font color="#008000">//执行SQL,返回结果集<br>
+</font><font color="#0000ff">if</font><font color="#000000">(!tab) console.log(</font><font color="#800000">"SQL执行失败"</font><font color="#000000">,err);<br>
+<br>
+</font><font color="#0000ff">for</font><font color="#000000">(i=1;#tab;1){<br>
+&nbsp; &nbsp; </font><font color="#0000ff">var</font><font color="#000000"> row = tab[ i ]<br>
+&nbsp; &nbsp; console.log(i,table.tostring(row))<br>
+}<br>
+</font><font color="#008000">/*<br>
+服务端默认已封装4个常用数据库函数:<br>
+rpcClient.exec() //执行SQL无返回值<br>
+rpcClient.getTable() //执行SQL返回结果集<br>
+rpcClient.getTables() //执行多个SQL返回结果集<br>
+rpcClient.transaction();//事务执行<br>
+rpcClient.storedProcedures();//执行储存过程<br>
+用法请查看库 carl.mysql或carl.mssql 两个库<br>
+*/</font><font color="#000000"><br>
+rpcClient.close();<br>
+<br>
+console.pause(</font><font color="#0000ff">true</font><font color="#000000">)</font></font>
+
+</body>
+</html>

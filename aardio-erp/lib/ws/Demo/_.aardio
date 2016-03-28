@@ -1,0 +1,32 @@
+﻿//Demo数据库演示
+namespace ws.Demo
+
+var servUrl = "/system/rpc.aardio";
+
+ahtmlServer = function(funcName,...){
+	return ..ws.ahtmlServer(servUrl, funcName, ...); 
+}
+
+exec = function( ... ){
+	var ok,t = ahtmlServer("exec", ... );
+	if( ok )
+		return ..table.unpackArgs(t);
+	return null,t;
+}
+
+getTable = function( ... ){
+	var ok,t = ahtmlServer("getTable", ... );
+	if( ok ){
+		var tab,err,fields = ..table.unpackArgs(t);
+		if(tab) tab["fields"] = fields;
+		return tab,err;
+	}
+	return null,t;
+}
+
+transaction = function( ... ){//事务执行,参数table
+	var ok,t = ahtmlServer("transaction", ... );
+	if( ok )
+		return ..table.unpackArgs(t);
+	return null,t;
+}

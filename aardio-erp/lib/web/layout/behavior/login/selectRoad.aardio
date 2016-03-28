@@ -1,0 +1,14 @@
+﻿
+//选择登录线路
+namespace web.layout.behavior.login.selectRoad
+
+onMenuItemClick =  {
+//匹配不到id的节点会触发default函数*/
+	default = function (ltTarget,ltOwner,reason,behaviorParams) {
+		var ltPopupOwner = ..web.layout.element( behaviorParams.he );//这是弹出菜单的按钮节点
+		var roadName = ltTarget.innerText;
+		var serverUrl = ltTarget.url;
+		var winform = ltOwner.getForm();
+		winform.showRoad(roadName, serverUrl);
+	}
+}

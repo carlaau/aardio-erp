@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<project ver="10" name="aardio-rpc" libEmbed="true" icon="..." ui="website" output="aardio-rpc.exe" CompanyName="aardio" FileDescription="aardio-rpc" LegalCopyright="Copyright (C) aardio 2016" ProductName="aardio-rpc" InternalName="aardio-rpc" FileVersion="0.0.0.03" ProductVersion="0.0.0.03" publishDir="/Publish/" dstrip="false">
+	<file name="main.aardio" path="main.aardio" comment="启动程序代码"/>
+	<file name="rpc.aardio" path="rpc.aardio" comment="rpc.aardio"/>
+	<file name="config.aardio" path="config.aardio" comment="config.aardio"/>
+	<file name="functions.aardio" path="functions.aardio" comment="functions.aardio"/>
+	<file name="sqlhelper.aardio" path="sqlhelper.aardio" comment="sqlhelper.aardio"/>
+</project>

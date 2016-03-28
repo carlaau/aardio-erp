@@ -1,0 +1,163 @@
+﻿
+namespace conn
+
+import fsys;
+import inet.url;
+import win;
+
+table = ..table;
+string = ..string;
+io = ..io;
+
+reg = function(ok){//注册开机运行
+	if( _STUDIO_INVOKED ){return ; }
+	import win.reg;
+	var regName = ..config.__desktopName;
+	var reg = win.reg("HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run") //创建新的注册表路径
+	if(ok){//开机运行
+		var bool = false;
+		for(name,value,t in reg.eachValue()) {	
+			if(name == regName){
+				bool = true
+				if(string.str(value) != io._exepath){
+					reg.setSzValue(regName,io._exepath) //设置新值
+					break ;
+				}
+			}
+		}
+		if(!bool){
+			reg.setSzValue(regName,io._exepath) //设置新值
+		}
+	}else {
+		for(name,value,t in reg.eachValue()) {
+			if(name == regName or string.str(value) == io._exepath){
+				reg.delValue(regName); //删除指定的值
+				break ;
+			}
+		}
+	}
+	reg.close();
+}
+
+deskQuick = function(){
+	import fsys.lnk;
+	
+	if( _STUDIO_INVOKED ){return ;}
+	win.delay(1000)
+	lnk = fsys.lnk();
+	lnk.description = ..config.__desktopName;		
+	lnk.path = io._exepath //设置目标路径
+	lnk.setIcon(io._exepath,0); //设置图标	
+	lnk.save(
+		fsys.joinpath( 
+			fsys.getSpecial(0x0010 /*_CSIDL_DESKTOPDIRECTORY*/ )
+			,..config.__desktopName ++ ".lnk" 
+			)
+	)
+}
+
+//返回窗体各控制值,返回table
+getwinform = function(winform,tab){//tab指定返回的字段
+	var t = {};
+	var bool = true;
+	for(name,ctrl in winform.eachControl() ){
+		name = string.replace(name,"<txt>|<cbo>","",1);
+		bool = true;
+		if(tab) bool = table.find(tab,name)
+		if(!bool) continue ;
+		if(ctrl.cls == "edit" or ctrl.cls == "richedit"){
+			t[name] = string.trim(ctrl.text);
+		}elseif(ctrl.cls == "combobox"){
+			t[name] = ctrl.selText;
+		}elseif(ctrl.cls == "comboboxex"){
+			t[name] = string.trim(ctrl.text);
+		}elseif(ctrl.cls == "select"){
+			t[name] = ctrl.getValue;
+		}elseif(ctrl.cls == "datetimepick"){
+			if(ctrl.checked){
+				var dt = ctrl.time;
+				dt.format="%Y-%m-%d %H:%M:%S";
+				t[name] = tostring(dt);
+			}else {
+				t[name] = "NULL";
+			}
+		}
+	}
+	return t; 
+}
+
+setwinform = function(winform, t){
+	for(name,ctrl in winform.eachControl() ){
+		name = string.replace(name,"<txt>|<cbo>","",1);
+		for(key,text in t){
+			if(string.lower(name) != string.lower(key)) continue ;
+			if(ctrl.cls == "combobox"){
+				ctrl.selText = text;
+			}elseif(ctrl.cls == "comboboxex"){
+				ctrl.text = text;
+				ctrl.edit.text = text;
+				ctrl.setChecked();
+			}elseif(ctrl.cls == "select"){
+				ctrl.selIndex = ctrl.find(text);
+			}elseif(ctrl.cls == "edit" or ctrl.cls == "richedit") {
+				ctrl.text = text;
+			}elseif(ctrl.cls == "datetimepick"){
+				if(!#text){
+					ctrl.checked = false;
+				}else {
+					ctrl.time = ..time(text, ((string.find(text,"\d+\:\d+")) ? "%Y-%m-%d %H:%M:%S" : "%Y-%m-%d"));
+				}				
+			}			
+			break ;
+		}
+	}
+}
+
+//参数: 与treeview控件table对像一样
+showSystemMenuLayout = function(tab){
+	var unImageUrl = "/layout/styles/images/Unknown.png"
+	var childMenu;
+	childMenu = function(t){
+		var str = "";
+		for(i=1;#t;1){
+			var row = t[i];
+			if(#row){//有子菜单
+				str += "<li>" ++ row.text;
+				str += "<menu>";
+				str += childMenu(row[1]);
+				str += "</menu>"
+			}else {
+				str += "<li path='" ++ (row.MenuPath:"") ++ "' id='" ++ row.MenuId ++ "'>" ++ row.text;
+			}
+			str += "</li>";
+		}
+		return str; 
+	}
+	var html = "<div .sys><img src='/layout/styles/images/Home.png'><span>我的桌面</span></div>";
+	for(i=1;#tab;1){//一级菜单
+		var row = tab[i];//{text=row.MenuName; MenuId=row.MenuId; MenuPath=row.MenuPath; ImagePath=row.ImagePath};
+		var ImagePath = row.ImagePath;
+		if(!#ImagePath || !string.load(ImagePath)){
+			ImagePath = unImageUrl;
+		}
+		if(#row){//有子菜单
+			html += "<div .sys-menu><img src='" + ImagePath + "'><span>" + row.text + "</span>";
+			html += "<menu .popup>";
+			html += childMenu(row[1]);
+			html += "</menu>";
+		}else {
+			html += "<div .sys path='" ++ (row.MenuPath:"") ++ "' id='" ++ row.MenuId ++ "'><img src='" + ImagePath + "'><span>" + row.text + "</span>";
+		}		
+		html += "</div>"
+	}
+	return html; 
+}
+
+getLayoutRoadMenu = function(tab){
+	var html = "";
+	for(i,t in tab){
+		html += "<li url='" + t[2] + "'>" + t[1] + "</li>";
+		if(i < #tab) html += "<hr/>";
+	}
+	return html; 
+}

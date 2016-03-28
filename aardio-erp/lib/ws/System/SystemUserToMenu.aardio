@@ -1,0 +1,32 @@
+﻿
+namespace ws.System.SystemUserToMenu
+
+import ws;
+import ws.sql;
+import ws.System;
+
+string = ..string;
+table = ..table;
+
+var webservice = ws.System;
+var tablename = "SystemUserToMenu"
+
+getUserMenuIds = function(SystemUserId){
+	var sql = "SELECT MenuId FROM " + tablename + " where SystemUserId='" + SystemUserId + "'";
+	var tab,err = webservice.getTable(sql);
+	if(!tab) return null,err;
+	var t = {}
+	for(i=1;#tab;1){
+		var row = tab[i];
+		table.push(t,row.MenuId)
+	}
+	return t;
+}
+
+getInsertSql = function(t){
+	return ws.sql.getInsertSql(tablename, t); 
+}
+
+getDeleteSql = function(SystemUserId,MenuId){
+	return "delete from " + tablename + " where SystemUserId='" + SystemUserId + "' and MenuId='" + MenuId + "'"; 
+}

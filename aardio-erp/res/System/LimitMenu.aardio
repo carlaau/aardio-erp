@@ -1,0 +1,177 @@
+import win.ui;
+/*DSG{{*/
+var winform = win.form(text="loading...";right=600;bottom=401;border="dialog frame";parent=...)
+winform.add(
+cbIsAdmin={cls="checkbox";text="设为部门管理员";left=169;top=47;right=276;bottom=65;dt=1;z=8};
+gbMenu={cls="groupbox";text="我可分配的系统菜单";left=162;top=76;right=412;bottom=400;aw=1;db=1;dt=1;edge=1;z=2};
+groupbox={cls="groupbox";text="我可分配的用户列表";left=1;top=27;right=160;bottom=400;aw=1;db=1;dl=1;dt=1;edge=1;z=3};
+groupbox3={cls="groupbox";text="我可分配的菜单按钮";left=414;top=76;right=599;bottom=400;aw=1;db=1;dr=1;dt=1;edge=1;z=5};
+groupbox4={cls="groupbox";text="设置";left=162;top=27;right=599;bottom=74;aw=1;dr=1;dt=1;edge=1;z=1};
+msg={cls="static";text="说明：打勾后，可对本部门及下级子部门员工进行菜单权限分配，尽限于分配本身享有的权限！";left=276;top=48;right=591;bottom=68;aw=1;color=16711680;dr=1;dt=1;nWrap=1;transparent=1;z=9};
+toolbar={cls="toolbar";text="工具条";left=0;top=-2;right=600;bottom=25;center=1;dl=1;dr=1;dt=1;edge=1;transparent=1;z=4};
+tvButton={cls="treeview";left=416;top=93;right=597;bottom=398;asel=false;aw=1;bgcolor=15793151;chkBox=1;db=1;dt=1;edge=1;fullRow=1;hscroll=1;singleExpand=false;vscroll=1;z=6};
+tvMenu={cls="treeview";left=164;top=93;right=410;bottom=398;asel=false;aw=1;bgcolor=15793151;chkBox=1;db=1;dt=1;edge=1;fullRow=1;hscroll=1;singleExpand=false;vscroll=1;z=10};
+tvUser={cls="treeview";left=3;top=45;right=158;bottom=398;asel=false;aw=1;bgcolor=15793151;db=1;dl=1;dt=1;edge=1;fullRow=1;hscroll=1;singleExpand=false;vscroll=1;z=7}
+)
+/*}}*/
+
+var tvMenu,tvUser;
+var tabUserInfo,tabUserMenu,tabMyMenuId = {},{},{};
+var myIsAdmin = (tabLoginInfo["LoginName"] == "admin" || tabLoginInfo["IsAdmin"] == "1");
+
+tvUser = win.ui.ctrl.treeviewex(winform.tvUser);
+tvUser.onnotify = function(id,code,ptr) {
+	/*响应通知*/
+	return tvUser.exOnnotify(id,code,ptr); 
+};
+tvUser.exMouseClick = function(hItem){//单击事件
+	var tab = tvUser.getItemData(hItem);
+	if(!tab) return ;
+	var SystemUserId = tab.SystemUserId;
+	if(!SystemUserId) return ;
+	SystemUserId = tostring(SystemUserId);
+	var tabtvMenu = tvMenu.getItemData(tvMenu.getRoot());
+	if(tabtvMenu.SystemUserId == SystemUserId) return ;	
+	
+	var t = tabUserInfo[SystemUserId];
+	if(!t) t = ws.System.SystemUser.getUserInfo(SystemUserId);
+	if(!t) return ;
+	tabUserInfo[SystemUserId] = t;
+	
+	var tMenuId = tabUserMenu[SystemUserId];
+	if(!tMenuId) tMenuId = ws.System.SystemUserToMenu.getUserMenuIds(SystemUserId);//加载已分配的菜单权限
+	if(!tMenuId) return ;
+	tabUserMenu[SystemUserId] = tMenuId;
+	tabtvMenu.SystemUserId = SystemUserId;
+	tvMenu.setItemText(tvMenu.getRoot(),tab.text)
+
+	winform.cbIsAdmin.checked = t["IsAdmin"] == "1" ? true : false;
+	tvMenu.enum(
+		function(hItem,parent){
+			var t = tvMenu.getItemData(hItem);
+			var bool = table.find(tMenuId,t.MenuId) ? true : false;
+			tvMenu.setChecked(hItem,bool)
+			t.checked = bool;
+		}
+	)
+}
+
+tvMenu = win.ui.ctrl.treeviewex(winform.tvMenu);
+tvMenu.onnotify = function(id,code,ptr) {
+	/*响应通知*/
+	return tvMenu.exOnnotify(id,code,ptr); 
+};
+tvMenu.exCheckBoxesChanged = function(hItem, checked){//选中事件
+	var tab = tvMenu.getItemData(hItem);
+	if(tab)	tab.checked = checked;
+}
+tvMenu.exMouseClick = function(hItem){//单击事件
+	//显示菜单按钮权限
+}
+
+winform.loadUser = function(){
+	var tabtree = {text="全部"};
+	if(myIsAdmin){
+		var tabUser = ws.System.SystemUser.getLimitUserList();
+		if(tabUser){
+			for(i=1;#tabUser;1){
+				var row = tabUser[i]
+				row.text = "[" + row.LoginName + "] " + row.NickName;
+			}
+			table.push(tabtree,tabUser)
+		}
+	}
+	tvUser.insertItem(tabtree);
+	tvUser.exExpandAll();
+}
+
+winform.loadMenu = function(){
+	var tab = {text="全部"}
+	if(myIsAdmin){
+		table.push(tab,table.clone(tabSystemTreeMenu))
+	}
+	tvMenu.insertItem(tab);//系统菜单
+	tvMenu.exExpandAll();
+}
+
+winform.load = function(){
+	winform.loadUser();
+	winform.loadMenu();
+	if(tabLoginInfo["LoginName"] == "admin"){//获取自己的权限
+		tabMyMenuId = ws.System.SystemMenu.getMenuIdsTable();
+	}else {
+		tabMyMenuId = ws.System.SystemUserToMenu.getUserMenuIds(tabLoginInfo["SystemUserId"]);
+	}
+	if(!myIsAdmin)	winform.msgbox("您不是部门管理员，不能分配权限","提示");
+}
+
+winform.btnSave = function(){
+	var t = tvMenu.getItemData(tvMenu.getRoot());
+	var SystemUserId = t.SystemUserId;
+	if(!SystemUserId){
+		winform.msgbox("请指定用户!","提示")
+		return false; 
+	}
+	var addNum,delNum = 0,0;
+	var trdate = ws.getServerTime();
+	var truser = tabLoginInfo["NickName"];
+	var tabMenu,tsql= {},{};
+	tvMenu.enum(
+		function(hItem,parent){
+			var tab = tvMenu.getItemData(hItem);
+			if(tab and tab.checked) table.push(tabMenu,tab.MenuId)
+		}
+	)
+	var tabMenuOld = tabUserMenu[SystemUserId];//原先的菜单权限
+	for(i,MenuId in tabMenu){
+		var t = {};
+		t.SystemUserId = SystemUserId;
+		t.MenuId = MenuId;
+		t.trdate = trdate;
+		t.truser = truser;
+		if(!table.find(tabMenuOld,MenuId)){//新增菜单权限
+			var sql = ws.System.SystemUserToMenu.getInsertSql(t);
+			table.push(tsql, sql);
+			addNum++;
+		}
+	}
+	for(i,MenuId in tabMenuOld){
+		if(!table.find(tabMenu, MenuId) && table.find(tabMyMenuId,MenuId)){//删除菜单权限			
+			var sql = ws.System.SystemUserToMenu.getDeleteSql(SystemUserId, MenuId);
+			table.push(tsql, sql);
+			delNum++;
+		}
+	}	
+	
+	var isAdmin = winform.cbIsAdmin.checked ? "1" : "0";
+	var tinfo = tabUserInfo[SystemUserId];
+	
+	if(tinfo["IsAdmin"] != isAdmin){
+		t = {}
+		t.isAdmin = isAdmin;
+		table.push(tsql,ws.sql.getUpdateSql("SystemUser", t, "SystemUserId='" + SystemUserId + "'"));//部门管理员
+	}
+	if(!#tsql){
+		winform.msgbox("权限无变化！","提示");
+		return false; 
+	}
+	var msg = "菜单权限 新增:" ++ addNum ++ ",删除:" ++ delNum;
+	msg += "<br>是否保存？";
+	if(!winform.msgboxTest(msg,"询问")){
+		return false; 
+	}
+	var ok,err = ws.System.transaction(tsql)
+	if(ok){
+		tabUserInfo[SystemUserId] = ws.System.SystemUser.getUserInfo(SystemUserId);
+		tabUserMenu[SystemUserId] = ws.System.SystemUserToMenu.getUserMenuIds(SystemUserId);
+		winform.msgbox("保存成功","提示")
+	}else {
+		winform.msgbox("保存失败，" ++ (err:""),"提示")
+	}
+}
+
+winform.toolbar.btnSave(winform.btnSave, "保存权限")
+
+winform.show()
+//win.loopMessage();
+return winform;

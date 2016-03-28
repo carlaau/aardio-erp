@@ -1,0 +1,79 @@
+//系统数据库
+//支持ahtml-RPC和直连数据库
+namespace ws.System
+
+var servUrl = "/system/index.ahtml";//ahtml-rpc服务端URL
+
+//数据库直连
+var serverIp = "127.0.0.1";
+var database = "erp";
+var uid = "root";
+var pwd = "123";
+
+sqlhelper = function(funcName,...){
+	import carl.mssql;
+	import carl.mysql;
+	
+	var t,conn,err;
+	var drive = ..config[["__drive"]] : ..thread.get("config.__drive") : "mysql";
+	if(drive == "mysql"){
+		conn,err = carl.mysql(serverIp,database,uid,pwd);
+	}else {
+		conn,err = carl.mssql(serverIp,database,uid,pwd);
+	}
+	if(!conn) return null,err; 
+	t,err = conn[funcName]( ... );
+	conn.close();
+	return t,err;
+}
+
+//ahtml-RPC
+ahtmlServer = function(funcName,...){
+	return ..ws.ahtmlServer(servUrl, funcName, ...); 
+}
+
+exec = function( ... ){
+	var ok,t = ahtmlServer("exec", ... );//ahtml-rpc
+	if( ok )
+		return ..table.unpackArgs(t);
+	return sqlhelper("exec", ... );//直连
+}
+
+getTable = function( ... ){
+	var ok,t = ahtmlServer("getTable", ... );
+	if( ok ){
+		var tab,err,fields = ..table.unpackArgs(t);
+		if(tab) tab["fields"] = fields;
+		return tab,err;
+	}
+	return sqlhelper("getTable", ... );
+}
+
+transaction = function( ... ){//事务执行,参数table
+	var ok,t = ahtmlServer("transaction", ... );
+	if( ok )
+		return ..table.unpackArgs(t);
+	return sqlhelper("transaction", ... );
+}
+
+sp_getPrimaryKey = function(tablename){//返回表新增主键
+	var ok,t = ahtmlServer("storedProcedures", "sp_getPrimaryKey", tablename);//执行存储过程
+	if( ok ){
+		var t,err = ..table.unpackArgs(t);
+		if(t) return t[1]["PrimaryKey"]; 
+		return null,err;
+	}
+	var t,err = sqlhelper("storedProcedures", "sp_getPrimaryKey", tablename);
+	if(t) return t[1]["PrimaryKey"]; 
+	return null,err;
+}
+
+getServerTime = function(){
+	var ok,t = ahtmlServer("getServerTime");
+	if( ok )
+		return ..table.unpackArgs(t);
+		
+	var t = ..time();
+	t.format="%Y-%m-%d %H:%M:%S";
+	return tostring(t); 
+}

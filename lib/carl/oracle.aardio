@@ -1,0 +1,100 @@
+//oracle 数据库
+namespace carl
+
+oracle = class {
+	ctor( server,database,uid,pwd,port = 1521,provider="MSDAORA"){
+		var conn,err;
+		try{
+			var connstr = "Provider=%s;data source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=%s)(PORT=%s))(CONNECT_DATA=(SERVER=DEDICATED)(SERVICE_NAME=%s)));user id=%s;password=%s";
+			port = tostring(port);
+			conn,err = sqlServer( connstr,provider,server,port,database,uid,pwd );
+		}
+		catch(e){
+			err = e;
+		}
+		if( conn ){
+			this.conn = conn;
+		}else {
+			return null,err; 
+		}
+	};
+	
+	regetTable = function(sql,...){//重写原库getTable函数
+		var rs,err = this.conn.openRecordSet(sql,,,...);
+		if(!rs) error(err,2);
+		
+		var fields = {};
+		for( i=1;rs.Fields.Count ){
+			fields[i] = rs.Fields(i-1).Name; 
+		}
+ 
+        var trim = string.trimright;
+        var result = { fields = fields  };  
+        var v;
+        while(!rs.eof){
+        	var row = {};  
+        	for(i,name in fields){ 
+        		v = rs( name ).value;
+        		if( type( v ) == "string" ) v = trim(v);
+        		elseif(..time.istime(v)){//增加时间判断
+        			v.format="%Y-%m-%d %H:%M:%S";
+        			v = tostring(v);
+        		}
+        		row[name] = v;
+        	}
+        	
+        	table.push( result,row );
+        	rs.movenext();
+        }
+		
+		return result;
+	}
+	
+	exec = function(sql){//执行SQL或存储过程,无返回值
+		var ok,err;
+		try{
+			if( this.conn )
+				ok,err = this.conn.exec(sql);
+		}
+		catch(e){
+			err = e;
+		}
+		return ok,err;
+	}
+	
+	getTable = function(sql){//执行SQL,返回table记录集
+		var t,err;
+		try{
+			if( this.conn )
+				t,err = this.regetTable(sql); 
+		}
+		catch(e){
+			err = e;
+		}
+		if( type(t) != type.table ) t = null;
+		return t,err;
+	}
+	
+	close = function(){
+		if( this.conn )
+			this.conn.close();
+	}
+}
+
+namespace oracle{
+	import sqlServer;
+	import com;
+
+	table = ..table;
+	string = ..string;
+}
+
+/**intellisense()
+carl.oracle = oracle数据库
+carl.oracle( server,database,uid,pwd,1521,"MSDAORA") = 创建oracle数据库连接,如果blob类型出错 把最后一个参数换成 "OraOLEDB.Oracle"
+carl.oracle() = !oracle.
+!oracle.conn = 数据库连接句柄
+!oracle.getTable(sql) = 返回查询结果集table对像\n每个元素代表一行,每行由N个键值对列组成,键fields为列名结果集
+!oracle.exec(sql) = 执行sq 成功返回ture,失败返回null,err
+!oracle.close() = 关闭连接
+end intellisense**/

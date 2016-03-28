@@ -1,0 +1,116 @@
+﻿//template汇总报表
+namespace carl.report
+
+template = class {
+	ctor(tableData){
+		
+		this.rowCmd = "sum";
+	};
+	
+	run = function( ){
+		var tKey = {};
+		var tab = tableData;
+		var n,countNum = 0,0;
+		var tTotal = {};
+		for(k,v in this.row) tTotal[v] = 0;//最后一行汇总
+		for(i=1;#tab;1){
+			var index = i+n;
+			var row = tab[index];
+			var key = #this.rowKey ? row[this.rowKey] : "1";
+			if(!tKey[key]){
+				countNum = 0;
+				var t = {};
+				for(k,v in this.row) t[v] = 0;
+				tKey[key] = t;
+			}
+			countNum++;
+			var t = tKey[key];
+			for(k,v in this.row){//行计算
+				if(this.rowCmd == "sum"){
+					t[v] += (tonumber(row[v]):0);
+					tTotal[v] += (tonumber(row[v]):0);
+				}
+				elseif(this.rowCmd == "avg"){
+					
+				}
+			}
+			for(name,exp in this.col){//列计算 col={ ProfitRate="math.round([TotalProfit]*100/([BuyTotalAmount]:1), 2)" }
+				var expstr = exp;
+				var expstr1 = exp;
+				for keyname in string.gmatch( exp,"\[(.*?)\]") { 
+					var keyvalue = row[keyname];
+					if(keyvalue === null){
+						keyvalue = 0;
+					}
+					expstr = string.replace(expstr,"\[" + keyname + "\]",keyvalue);
+					expstr1 = string.replace(expstr1,"\[" + keyname + "\]",keyvalue);
+				}
+				row[name] = eval(expstr);
+				t[name] = eval(expstr1);
+			}
+
+			var row1 = tab[index+1];
+			var key1 = null;
+			if(row1) key1 = #this.rowKey ? row1[this.rowKey] : "1";
+			if((!row1 || key1 != key) && countNum>1){//小计
+				for(k,v in this.rowDefault){//行默认值
+					t[v] = row[v];
+				}
+				if(#this.rowKeyValue){
+					var str = this.rowKeyValue;
+					for keyname in string.gmatch( this.rowKeyValue,"\[(.*?)\]") { 
+						str = string.replace(str,"\[" + keyname + "\]",row[keyname])
+					}
+					if(#this.rowKey) t[this.rowKey] = str;
+				}
+				for(name,exp in this.col){//列计算 col={ ProfitRate="math.round([TotalProfit]*100/([BuyTotalAmount]:1), 2)" }
+					var expstr = exp;
+					for keyname in string.gmatch( exp,"\[(.*?)\]") { 
+						var keyvalue = t[keyname];
+						if(keyvalue === null){
+							keyvalue = 0;
+						}
+						expstr = string.replace(expstr,"\[" + keyname + "\]",keyvalue);
+					}
+					t[name] = eval(expstr);
+				}
+				table.insert(tab,t,index+1)
+				n++;
+			}
+		}
+		if(#this.rowKeyValueTotal){//最后一行汇总
+			if(#this.rowKey) tTotal[this.rowKey] = this.rowKeyValueTotal;
+			for(name,exp in this.col){//列计算 col={ ProfitRate="math.round([TotalProfit]*100/([BuyTotalAmount]:1), 2)" }
+				var expstr = exp;
+				for keyname in string.gmatch( exp,"\[(.*?)\]") { 
+					var keyvalue = tTotal[keyname];
+					if(keyvalue === null){
+						keyvalue = 0;
+					}
+					expstr = string.replace(expstr,"\[" + keyname + "\]",keyvalue);
+				}
+				tTotal[name] = eval(expstr);
+			}
+			table.push(tab,tTotal)
+		}
+	}
+}
+
+namespace template{
+	string = ..string;
+	table = ..table;
+	math = ..math;
+}
+
+/**intellisense()
+carl.report.template = 报表模板
+carl.report.template(tab) = 创建报表模板,参数tab为数据库查询返回的数据集
+carl.report.template() = !template.
+!template.run() = 开始生成报表数据，返回table对像
+!template.rowCmd = @.rowCmd = "sum";//行计算命令，sum表示行求和，avg表示行平均
+!template.row = @.row = {"字段1";"字段2"};//行计算的字段数据集table对像
+!template.col = @.col = {除以="math.round([字段1]*100/([字段2]:1), 2)";求和="[字段1]+[字段2]"};//列计算的字段数据集table对像,格式:列名=表达式,表大式中字段变量需用[]包含,
+!template.rowDefault = @.rowDefault = {"字段3";"字段4"};//行计算中列名默认值
+!template.rowKey = 列名，做为行分组计算的唯一值，此值可忽略，
+!template.rowKeyValue = @.rowKeyValue = "汇总 [字段1]";//报表名称，支持表达式，字段变量需用[]包含
+end intellisense**/

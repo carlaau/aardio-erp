@@ -1,0 +1,33 @@
+
+#footer {
+	background:rgb(239,237,238);
+	height:35px;
+	text-align:center;
+	width:100%;
+	padding:10px 20px;
+	position:absolute;/*使用绝对定位*/
+	bottom: 0px;
+	flow: horizontal;
+}
+
+#footer button{
+    behavior:~ "msgbox";
+}
+
+#footer button{
+	padding:5px 0px 5px;
+	font-size:15px; 
+	background:rgb(27,174,93);
+	color:white; 
+	width:70px;
+    height:23px;
+	background-position: 5px 6px 7px 8px;
+	background-repeat: expand stretch-top stretch-left stretch-middle stretch-right stretch-bottom;
+}
+
+#footer button:hover { 
+	background:rgb(33,127,188);
+	outline: 1px glow rgb(91,171,230) 1px;
+	cursor:pointer;
+} 
+

@@ -1,0 +1,103 @@
+﻿//config 配置文件
+
+import win.ui.menu;
+import win.ui.statusbar;
+import win.ui.toolbar;
+
+import fsys;
+import fsys.config;
+
+import process;
+import console;
+
+import carl.update;
+import carl.ctrl;//自定义控件库
+import carl.report;//报表库
+import carl.http;
+import conn;
+
+import ws;
+import ws.sql;
+import ws.System;
+import ws.System.SystemUser;
+import ws.System.Errlog;
+import ws.System.SystemMenu;
+import ws.System.SystemUserToMenu;
+
+config  = ..fsys.config("/config/"); 
+
+/**
+config  = ..fsys.config( 
+	..fsys.joinpath( ..fsys.getSpecial( 0x1c /*_CSIDL_LOCAL_APPDATA*/  ),"应用程序名" ) 
+); 
+**/
+
+//不需要序列化的配置名字前请添加下划线
+namespace config {
+	__appName = "ERP系统框架 - by aardio";
+	__appCompanyName = "carl论坛 - aardio第三方论坛";
+	__website = "http://www.aardio.org/?erp";
+	__desktopName = "aardio ERP";
+	__appRoad = {
+		{"内网";"http://192.168.17.249:8020"};
+		{"外网";"http://erp.carlaau.com"};
+		{"测试";"http://127.0.0.1:8020"};
+		//{"直连";""};//如果需要支持数据库直连,请去掉注释//, 然后把\lib\ws\System\直连.txt 重命名为_.aardio
+	}
+	__drive = "mysql";//或mssql
+	__info1 = "ERP管理系统";
+	__info2 = "xx商务中心";
+}
+thread.set("config.__drive", config.__drive);
+
+import util
+util.metaProperty.extend(win.ui.ctrl.datetimepick,{
+	checked = {
+         _get = function(){  
+         	return ! ::SendMessageByStruct(owner.hwnd, 0x1001/*_DTM_GETSYSTEMTIME*/,0,owner.time);//修复win2003系统会崩溃
+         }
+         _set = function( v ){
+			if(!v) return ::SendMessageByStruct(owner.hwnd, 0x1002/*_DTM_SETSYSTEMTIME*/,1, {});
+			if(! ..time.istime(v)) error("无效的time对象",2);
+		    ::SendMessageByStruct(owner.hwnd, 0x1002/*_DTM_SETSYSTEMTIME*/,0, v);
+		}
+    };
+})
+
+/**intellisense(config)
+__appName = 应用程序名
+__appVersion = 应用程序内部版本号
+__appDescription = 程序说明
+__website = 官方网站
+__appCompanyName = 公司名称
+__appRoad = 线路
+__drive = 数据库类型,mysql 或mssql
+__desktopName = "桌面快捷方式名称"
+__info1 = 主界面信息1;
+__info2 = 主界面信息2;
+
+saveAll() = 写入所有配置到文件
+mainForm.load() = 从配置文件(文件名"default")载入\n加载成功返回对象,加载失败返回null空值\n!fsys_table.
+mainForm.save() = 存储到配置文件(文件名"default")
+mainForm.mixin = @.mixin(\n   键名 = 值__;\n   键名 = 值;\n);//该数会自动调用save函数保存配置到文件
+mainForm.控件名称 = 控件默认值\n调用save()函数同步控件当前值
+mainForm.属性名 = 自配置文件(文件名"default")读写属性\n属性值可以是支持序列化的普通变量,支持table对象.\n配置文件在首次使用时自动加载,退出程序时自动保存.
+end intellisense**/
+
+/**intellisense()
+tabLoginInfo = 登录用户信息,全局变量
+tabLoginInfo.SystemUserId = 用户ID
+tabLoginInfo.LoginName = 登录名 
+tabLoginInfo.NickName = 姓名
+tabLoginInfo.PassWord = 密码
+tabLoginInfo.CreateTime = 创建时间
+
+mainFormTabCtrl = 主界面选项卡,全局变量
+mainFormTabCtrl.addTabForm( file, title, menuId,其他参数) = 新建选项卡
+mainFormTabCtrl.isOpenOnlyOne = 是否允许一个fileurl打开多个选项卡,true 或 false
+mainFormTabCtrl.closeTabForm(selIndex) = 关闭当前选项卡
+mainFormTabCtrl.selIndex = 当前selIndex
+
+tabSystemTreeMenu = 菜单权限,全局变量
+
+end intellisense**/

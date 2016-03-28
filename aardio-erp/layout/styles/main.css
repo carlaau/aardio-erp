@@ -1,0 +1,132 @@
+﻿
+#container{
+    width:100%; 
+    height:100%%; /*撑满剩余可用空间*/
+    flow: horizontal; /*将容器内部块元素变为横向布局 - 比具有破坏性的float浮动布局更方便*/
+    margin:0 auto; 
+    overflow:hidden;
+	background-color: #f5f5f5;
+}
+
+#container .lside{ 
+    width:150px;  
+    background:rgb(110,179,210);
+}
+
+#container .rside{
+    height:100%; 
+    background:#FFF; 
+}
+
+#container .lside > *{
+    margin:38px 0px;
+}
+
+#container .rside > *{
+    margin:38px 10px;
+    font-size:9pt;
+}
+
+#container .lside{
+    height:100%;
+    width:150px;  
+    background:rgb(110,179,210);
+}
+
+#container .rside{
+    height:100%; 
+    background:#FFF; 
+}
+
+#reflection {
+	text-align:center;
+	padding-bottom: 50px;
+	height: 100px;
+	width: 100%;
+	margin:50% 0 0 0;
+	overflow:hidden;
+	behavior:reflection;
+    -reflection-opacity-start: 0.4;
+    -reflection-opacity-end: 0.0;
+    -reflection-blur-radius: 3;
+}
+#reflection .maininfo{
+	font-size:50px;
+	margin:* * 2px *;
+	color:#4B5F6B;
+	overflow:hidden;
+}
+
+.systemmenu {
+	background-color: #FFF;
+	border-bottom: 1px solid #a1a1a1;
+	display: block;
+	width: 100%;
+	height: 70px;
+	overflow: hidden;
+	background-color: #FFFFFF #aeddff #aeddff #aeddff;
+	flow: horizontal;
+}
+.systemmenu span{
+	padding: 5px 0 2px 0;
+}
+.systemmenu .sys-menu, .sys {
+	display: inline-block;
+	height: 50px;
+	width: 50px;
+	color: #333;
+	text-decoration: none;
+	text-align: center;
+	margin: 3px 0 2px 5px;
+	font-size: 12px;
+	padding: 0 7px ;
+	border-radius: 5px;
+	border: 1px solid transparent;
+	background-color: transparent;
+	line-height: 100%;
+}
+.systemmenu .sys-menu {
+	behavior: popup-menu;
+}
+.systemmenu .sys-menu  > menu{
+    behavior:~ "main.systemMenu";   
+}
+.systemmenu .sys {
+    behavior:~ "main.systemMenuClick";   
+}
+.systemmenu .sys-menu:hover, .sys:hover{
+	border: 1px solid #999999;
+	transition: background-color(quart-in-out, 0.5s, 0.5s);
+}
+.systemmenu .sys-menu:owns-popup /*菜单已弹出*/
+{ 
+	border: 1px solid #999999;
+	background-color: #BBE9FF;
+	transition: background-color(quart-in-out, 0.5s, 0.5s);
+}
+.systemmenu .sys-menu img, .sys img {
+	display: block;
+	width: 40px;
+	margin: 1px 1px 0 1px;
+}
+
+#mainfooter{
+    height:22px;
+    background:rgb(52,152,220);
+	font-size:12px; 
+	color:white; 
+	text-align:right;
+	flow: horizontal;
+	position:absolute;/*使用绝对定位*/
+	bottom:0px;/*底坐标为50像素*/
+	width:100%;
+	overflow:hidden;
+}
+
+#mainfooter .status{
+	padding:5px 15px 0px;
+	margin:0 0 0 20px;
+}
+#status4 {
+	behavior:~ "main.click";
+}

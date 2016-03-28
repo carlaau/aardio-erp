@@ -1,0 +1,189 @@
+﻿
+namespace ws.System.SystemMenu
+
+import ws;
+import ws.sql;
+import ws.System;
+
+string = ..string;
+table = ..table;
+
+var webservice = ws.System;
+var tablename = "SystemMenu"
+
+insert = function(t){
+	var sql = ws.sql.getInsertSql(tablename, t);
+	var ok,err = webservice.exec(sql)
+	return ok,err; 
+}
+
+update = function(tab,Id){
+	var sql = ws.sql.getUpdateSql(tablename, tab, "MenuId = '" + Id + "'");
+	var ok,err = webservice.exec(sql)
+	return ok,err;
+}
+
+getMenuName = function(MenuId){
+	var sql = "SELECT MenuName FROM " + tablename + " where MenuId='" + MenuId + "'";
+	var tab,err = webservice.getTable(sql);
+	if(!tab || !#tab) return null,err;
+	return tab[1]["MenuName"]; 
+}
+
+//返回树形菜单
+getMenuList = function(MenuIdStr,sqlExp){
+	var tlist,tmenuId = {"一级菜单"},{["一级菜单"] = "0"};
+	var sql = "SELECT MenuId,MenuName,MenuIdStr,SortIdStr FROM " + tablename + " %s order by SortIdStr";
+	var where = "";
+	if(MenuIdStr){
+		if(sqlExp == "like"){
+			where = "where MenuIdStr like '%" + MenuIdStr + "%'";
+		}
+		elseif(sqlExp == "not like") {
+			where = "where MenuIdStr not like '%" + MenuIdStr + "%'";
+		}
+		elseif(sqlExp == "=") {
+			tlist,tmenuId = {},{};
+			where = "where MenuIdStr='" + MenuIdStr + "'";
+		}
+		elseif(sqlExp == "!=") {
+			where = "where MenuIdStr!='" + MenuIdStr + "'";
+		}
+	}	
+	sql = string.format(sql, where);
+	var tab,err = webservice.getTable(sql);
+	for(i=1;#tab;1){
+		var t = tab[i];
+		var MenuName = formatMenuIdStr(t.MenuIdStr,t.MenuName);
+		table.push(tlist,MenuName);
+		tmenuId[MenuName] = t.MenuId;
+	}
+	return tlist,tmenuId,tab; 
+}
+
+//返回完整菜单ID串
+getMenuIdStr = function(MenuId, NowMenuId){
+	MenuId = tostring(MenuId);
+	var MenuIdStr = ",";
+	if(MenuId != "0"){
+		var sql = "SELECT MenuIdStr FROM " + tablename + " where MenuId='" + MenuId + "'";
+		var tab,err = webservice.getTable(sql);
+		if(!tab) return null,err;
+		if(!#tab) return null,"无效菜单";
+		MenuIdStr = tab[1]["MenuIdStr"];
+	}
+	if(NowMenuId) MenuIdStr += tostring(NowMenuId) ++ ",";
+	return MenuIdStr;
+}
+
+//返回排序ID串
+getSortIdStr = function(MenuId,SortId){
+	MenuId = tostring(MenuId);
+	if(MenuId == "0") return SortId;
+	var sql = "SELECT SortIdStr FROM " + tablename + " where MenuId='" + MenuId + "'";
+	var tab,err = webservice.getTable(sql);
+	if(!tab) return null,err;
+	if(!#tab) return null,"无效菜单";
+	return tab[1]["SortIdStr"] ++ "," ++ SortId;  
+}
+
+//格式化完整菜单
+formatMenuIdStr = function(MenuIdStr,MenuName){
+	MenuIdStr = string.trim(MenuIdStr,",")
+	var t = string.split(MenuIdStr,",");
+	var MenuId = t[#t];
+	var str = "";
+	for(i=1;#t-1;1){
+		str = str ++ "    ";
+	}
+	if(!MenuName){ MenuName = getMenuName(MenuId) : ""};
+	str += (str=="") ? MenuName : ("|—" ++ MenuName);
+	return str;
+}
+
+//格式化同级排序
+formatSortIdStr = function(SortIdStr){
+	var t = string.split(SortIdStr,",");
+	var str = "";
+	for(i,SortId in t){
+		 if(i<#t) str = (str ++ "  ");
+	}
+	var SortId = t[#t];
+	str = (str=="") ? (str ++ SortId) : (str ++ "|—" ++ SortId);
+	return str;
+}
+
+getMenuData = function(MenuIds){
+	var sql = "SELECT MenuId,ParentId,MenuName,MenuPath,ImagePath FROM " + tablename + " %s order by SortIdStr";
+	var where = "where 1=1 and IsUse='1'";
+	if(#MenuIds){
+		where += " and MenuId in(" + MenuIds + ")";
+	}
+	sql = string.format(sql, where);
+	var tab,err = webservice.getTable(sql);
+	if(!tab) return null,err;
+	return tab; 
+}
+
+//返回 窗口菜单,树形菜单 table对像
+getFormAndTreeMenuTable = function(MenuIds, FunctionName){
+	var tab,err = getMenuData(MenuIds);
+	if(!tab) return null,err;
+	var each;
+	each = function(row){
+		var tchild = {};
+		var tchildTree = {};
+		var n = 0;
+		for(i=1;#tab;1){
+			var t = tab[i];
+			if(t.ParentId == row.MenuId){
+				if(n>0) table.push(tchild,{});
+				var t1,t2 = each(t);
+				table.push(tchild, t1);
+				table.push(tchildTree, t2);
+				n++;
+			}
+		}
+		
+		var t = {row.MenuName};
+		if(#tchild){
+			table.push(t,tchild);
+		}else {
+			table.push(t, function(id){
+				if(FunctionName)
+					FunctionName(row.MenuPath, row.MenuName);//窗口菜单执行函数
+			}
+			)
+		}
+		
+		var tTree = {text=row.MenuName; MenuId=row.MenuId; MenuPath=row.MenuPath; ImagePath=row.ImagePath};
+		if(#tchildTree){
+			table.push(tTree,tchildTree);
+		}
+		return t,tTree; 
+	}
+
+	var tMeun = {};//窗口菜单
+	var tTree = {};//树形菜单
+	for(i=1;#tab;1){
+		var row = tab[i];
+		if(row.ParentId == 0){//一级菜单
+			var t1,t2 = each(row);
+			table.push(tMeun, t1);
+			table.push(tTree, t2);
+		}
+	}
+	return tMeun,tTree;
+}
+
+getMenuIdsTable = function(){
+	var sql = "SELECT MenuId FROM " + tablename;
+	var tab,err = webservice.getTable(sql);
+	if(!tab) return null,err;
+	var t = {}
+	for(i=1;#tab;1){
+		var row = tab[i];
+		table.push(t,row.MenuId)
+	}
+	return t;
+}

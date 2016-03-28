@@ -1,0 +1,71 @@
+//config 配置文件
+namespace config;
+
+/*
+所使用的数据库,支持以下三种数据库
+如：mssql,mysql,oracle
+*/
+driver = "mysql";
+
+/*
+主机名或主机 IP
+本机可使用 "localhost" 或 "127.0.0.1"
+*/
+host = "192.168.17.249";
+
+/*
+实例名，只对mssql数据库有效
+*/
+msname = "";
+
+/*
+登录数据库所使用的用户名
+*/
+username = "root";
+
+/*
+登录数据库所使用的密码
+*/
+password = "123456";
+
+/*
+数据库名称，连接数据库成功后将自动选择该库
+*/
+dbname = "ErpAAuto";
+
+/*
+数据库端口
+*/
+port = 3306;
+
+/*
+RSA私钥, 用于解密post传输的加密数据包, 如果不需要解密请留空!
+
+通过以下代码获取
+import crypt.rsa;
+import crypt.bin;
+var rsa = crypt.rsa();
+rsa.genKey();
+var publicKey = crypt.bin.encodeBase64(rsa.exportPublicKey());//RSA公钥
+var privateKey = crypt.bin.encodeBase64(rsa.exportPrivateKey()); //RSA私钥
+rsa.release();
+string.save("/publicKey.txt", publicKey);
+string.save("/privateKey.txt", privateKey);
+*/
+rsaPrivateKey = /*
+BwIAAACkAABSU0EyAAQAAAEAAQDve7UdKeI35NfLa8JkE4YQsxwKNCeE/OwAsqwd
+iVv/g4I0Lay5DupUhM8j8DHPePg6TFiDQ2APSaSRx5hiA/lrDlfX2UBltJV+Hzl8
+lxhj/wChQl8+7A9I6IvcyjqCzwZMRllVj5cOUFouxJJV/PqemQf5n+vQJ90V2B6F
+kCnjxkl74Nos2524IjwzUsKbErdU45QHXEdCMyHHKoi7djY8uZEiaWEevxqHiq5o
+DsbzVFSl3YQb6njSd0S3IjaQ6td3xZXnKt40cAFxL8TmpbNe2hmYJwCfwoBf76Jp
+6UHJlTdR0nxO0+HAz+4ds21Ed9Img7aLzS3xBVJF7F1+TM/r2ZEekC9QfAziiSyh
+qYV1PUdWb7C1FhrVfisCcVZS/wqktkFhq6zXg4AbBqrdrteXFzTBhUAXFmHqRdzn
+p2VfHs+fZl0qwBsNAdIDLLeGgwh1DPOrOcgodtAtDDhrNSpqZULY4opj9PH5Sy57
+lZh/1o+n4Vq09t86AQWuxf8O7pVYIb0WbXhycsHZ3PIFOEphW5co6KpjrFMctY1l
+t923D2nCxvlBLpyJSLpXlZqRZWHiTtlNI3/oqKZx5FLo+xAeQWDFDC6g3tFqU67l
+vsDa9mYn6wvukLzCjZ9eIom/lPVT6iolT1jhLEG50sGauQGefuUPE/HLB9dUvP+h
+67seqsK2cVaXNWq8Me5EBwPPf1tV4PBlaejLyJDT8Hy3PhB8/caePfZ8VQ1Jf9D6
+kR70D5AUF73U99vkWRRrrwl68Rw=
+*/;
+
+//rsaPrivateKey = "";

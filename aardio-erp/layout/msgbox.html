@@ -1,0 +1,30 @@
+﻿<html>
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+<head>
+  <link rel="stylesheet" href="styles/titlebar.css" />
+  <link rel="stylesheet" href="styles/msgbox.css" />
+</head> 
+<body>
+    <!-- 界面顶栏 -->
+    <div id="header"> 
+          <include src="titlebar.html" /> 
+    </div> 
+
+    <!-- 界面中部内容栏 -->	
+		<table width="100%" align="center">
+		<tr>
+		<td height="80" width="60" align="center" valign="middle">
+			<img id="msgbox" src="\layout\styles\images\msgbox.png"/>
+			<img id="msgboxTest" src="\layout\styles\images\msgboxTest.png"/>
+			<img id="msgboxErr" src="\layout\styles\images\msgboxErr.png"/>
+		</td>
+		<td height="80" align="left" valign="middle" style="word-break:break-all">
+		<span id="msg"></span>
+		</td></tr></table>
+    <!-- 界面底栏 -->
+    <div id="footer">
+	<button id="btnOk">确定</button>
+	<span id="Cancel">&nbsp;&nbsp;&nbsp;<button id="btnCancel">取消</button></span>
+    </div>
+
+</body>

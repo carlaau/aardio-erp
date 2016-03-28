@@ -1,0 +1,45 @@
+//RSA 加密解密
+
+namespace carl.rsa
+
+import crypt.bin;
+import crypt.rsa;
+
+encrypt = function(str, publicKey){//RSA加密
+	if(!#str) return;
+	var bin,err;
+	try{
+		publicKey = crypt.bin.decodeBase64( publicKey );
+		var rsa = crypt.rsa()
+		rsa.importKey(publicKey) //导入公钥
+		bin = rsa.encrypt(str);
+		rsa.release();
+	}
+	catch(e){
+		err = e;
+	}
+	return bin,err;
+};
+
+decrypt = function(str, privateKey){//RSA解密
+	if(!#str) return; 
+	var bin,err;
+	try{
+		privateKey = crypt.bin.decodeBase64( privateKey )
+		var rsa = crypt.rsa();
+		rsa.importKey(privateKey);
+		bin = rsa.decrypt(str);
+		rsa.release();
+	}
+	catch(e){
+		err = e;
+	}
+	return bin,err;
+};
+
+/**intellisense()
+carl.rsa = RSA加密解密
+carl.rsa.encrypt(str, publicKey) = RSA加密,公钥key需先Base64编码
+carl.rsa.decrypt(str, privateKey) = RSA解密,私钥key需先Base64编码
+end intellisense**/
+

@@ -1,0 +1,165 @@
+//http网络库
+namespace carl.http
+
+string = ..string
+math = ..math;
+thread = ..thread;
+raw = ..raw;
+table = ..table;
+
+delay = ..win[["ui"]] ?  ..win[["delay"]] : sleep;
+
+var func = function(tab,mode = "http"){
+	import inet.http;
+	import inet.whttp;
+	
+	var http,t;
+	tab["agent"] := "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:34.0) Gecko/20100101 Firefox/34.0";
+	if(mode == "http"){
+		http = inet.http(tab["agent"]);
+		if(tab["flags"]) http.flags = 0x80000000/*_INTERNET_FLAG_RELOAD强制文件从服务器下载不是缓存*/ | 0x4000000/*_INTERNET_FLAG_DONT_CACHE*不缓存数据*/
+	}else {
+		http = inet.whttp(tab["agent"],tab["proxy"]);
+	}
+	if(tab["postdata"]){
+		t = {http.post(tab["url"], tab["postdata"], tab["header"], tab["refurl"])};
+	}else {
+		t = {http.get(tab["url"], tab["header"], tab["refurl"])};
+	}
+	http.close();
+	http = null;
+	thread.set("d_t_" ++ tostring(thread.getId()),t);
+}
+
+var functcp = function(tab){
+	import wsock.tcp.client;
+	import thread.table;
+	import inet.url;
+	import string.list;
+	
+	var funchunked;
+	funchunked = function(html, rhtml=""){
+		var len,html = string.match(html,"(\w+)" ++ '\r\n' ++ "(.*)");
+		if(len == "0" || !len) return rhtml;		
+		len = tonumber(len, 16);
+		rhtml += string.left(html, len);
+		html = string.sub(html,len+1,#html)
+		return funchunked(html, rhtml);
+	}
+	
+	var turl = inet.url.split(tab["url"])
+	if(turl.path == "") turl.path = "/";	
+	var getUrl = turl.extraInfoLen ? turl.path ++ turl.extraInfo : turl.path;
+	var postdata = tab["postdata"];
+	var method = postdata ? "POST" : "GET";
+	var sendData = method ++ " " ++ getUrl ++ ' HTTP/1.1\r\n';
+	
+	var tsend = string.list(tab["header"]:"",'\r\n',":");
+	tsend["Host"] = turl.host;
+	tsend["Connection"] := "close";
+	tsend["User-Agent"] := tab["agent"] : "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:34.0) Gecko/20100101 Firefox/34.0";
+	tsend["Cache-Control"] := "max-age=0";
+	tsend["Accept"] := "application/xml,application/xhtml+xml,text/html;q=0.9,text/plain,image/png,*/*;";
+	tsend["Accept-Language"] := "zh-cn,zh;q=0.8,en-us;q=0.5,en;q=0.3;";
+	tsend["Accept-Charset"] := "GBK,utf-8";
+	if(tab["refurl"]) tsend["Referer"] := tab["refurl"];
+	if(method == "POST") tsend["Content-Type"] := (postdata[1]=='{'# or postdata[1]=='['#) ? "application/json; charset=utf-8" : "application/x-www-form-urlencoded";
+	sendData += tsend._tostring() ++ '\r\n\r\n';
+	if(method == "POST") sendData += postdata ++ '\r\n\r\n';
+	
+	var tre,t = {},{};
+	var html;
+	try{
+		var tcp = wsock.tcp.client();
+		tcp.connect(turl.host, turl.port);
+		tcp.write( sendData );
+		for(str,size in tcp.eachRead()){ 
+			table.push(t,str);
+		}
+		tcp.close();
+		tcp = null;
+		html = string.join(t);
+	}
+	catch(e){
+		tre[2] = e;
+	}
+	if(#html){
+		var status = string.match(html,"(.*?)" ++ '\r\n');
+		var header = string.match(html, '\r\n' ++ "(.*?)" ++ '\r\n\r\n');
+		html = string.match(html,'\r\n\r\n' ++ "(.*)");
+		var code = string.match(status,"HTTP\s*\/1\.1\s*(\d+)");
+		if(code == "200"){
+			if(string.find(header,"Transfer\-Encoding\:\s*chunked")){
+				var rhtml = funchunked(html);
+				if(#rhtml) html = rhtml;
+			}
+			tre[1] = html;
+		}
+		else {			
+			tre[2] = html;
+			tre[3] = tonumber(code);
+		}
+		tre[4] = header;
+	}
+	html = null;
+	thread.set("d_t_" ++ tostring(thread.getId()),tre);
+}
+
+var funcommand = function(url, mode, ...){
+	var tab = {};
+	if(type(url) == type.string){
+		tab["url"] = url;
+		tab["postdata"], tab["header"], tab["refurl"] = ...;
+	}
+	elseif(type(url) == type.table){
+		tab = url;
+	}
+	else {
+		return null,"参数错误"; 
+	}
+	var handle,tid;
+	if(mode == "tcp"){
+		handle,tid = thread.create(functcp, tab);
+	}else {
+		handle,tid = thread.create(func, tab, mode);
+	}
+	var name = "d_t_" ++ tostring(tid);
+	thread.set(name, null);
+	var t;
+	var timeout = (tab["timeout"] : 90) * 10;//秒
+	for(i=1;timeout;1){
+		delay(100);
+		t = thread.get(name);
+		if(t) break;
+		if(i == timeout && handle) thread.terminate( handle );
+	}
+	if( handle ) raw.closehandle( handle );
+	handle = null;
+	thread.set(name, null);
+	if(t){
+		return table.unpackArgs(t);
+	}else {
+		return null,"Request Timeout";
+	}
+}
+
+down = function(url, ...){
+	return funcommand(url,"http",...); 
+}
+
+downwhttp = function(url, ...){
+	return funcommand(url, "whttp", ...); 
+}
+
+downtcp = function(url, ...){
+	return funcommand(url, "tcp", ...);
+}
+
+/**intellisense()
+carl.http.down(url,postdata,header,refurl) = inet.http库,返回 html,err,code
+carl.http.down = @.down(\n{\n	url = "";\n	postdata = null;\n	header = null;\n	refurl = null;\n	agent = null;\n	timeout = 90;\n	flags=false;\n}\n)//参数:table对像 inet.http库,返回 html,err,code
+carl.http.downwhttp(url,postdata,header,refurl) = inet.whttp库,返回 html,err,code
+carl.http.downwhttp = @.downwhttp(\n{\n	url = "";\n	postdata = null;\n	header = null;\n	refurl = null;\n	agent = null;\n	timeout = 90;\n}\n)//参数:table对像 inet.whttp库,返回 html,err,code
+carl.http.downtcp(url,postdata,header,refurl) = 通过wsock.tcp.client,返回 html,err,code,header,不支持https
+carl.http.downtcp = @.downtcp(\n{\n	url = "";\n	postdata = null;\n	header = null;\n	refurl = null;\n	agent = null;\n	timeout = 90;\n}\n)//参数:table对像 wsock.tcp.client库,返回 html,err,code,header,不支持https
+end intellisense**/

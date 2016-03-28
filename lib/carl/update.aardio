@@ -1,0 +1,181 @@
+//update自动更新
+
+namespace carl;
+
+update = class {
+	ctor(updateUrl, downUrl, mainExe, winform, cmdmsg ){
+		this.updateUrl = updateUrl;
+		this.downUrl = downUrl;
+		this.winform = winform;
+		this.cmdmsg = cmdmsg;
+		this.updateExe = string.replace(mainExe,"\.","_u.");//更新程序名称
+		this.updateExeOld = string.replace(mainExe,"\.","_update.");//更新程序名称
+		this.mainExe = mainExe;  //主程序名称
+		this.updateDir = io._exedir;			//更新的程序目录
+		this.exeDir = this.updateDir;			//主程序路径
+	};	
+	
+	//获取最新版本号
+	getNewVer = function(){
+		var http = inet.http()
+		html = http.get(this.updateUrl):"";
+		http.close();
+		var ver,log = string.match(html,"ver=\[(.*?)\].*?log=\[(.*?)\]");
+		return ver,log;
+	};	
+	
+	//检查是否要更新
+	checkUpdate = function(ver,up=false){
+		var bool = false;
+		if(this.cmdmsg == "-update"){//开始下载更新
+			process.kill(this.mainExe)
+			var downBox = inet.downBox(,"程序升级")
+			downBox.endProc = function(ret,fileSize,err){
+				if(ret){
+					downBox.close()
+					if(this.winform){this.winform.close();}
+					io.remove(this.exeDir + this.mainExe + ".dowload")
+					win.delay(100)
+					process(this.exeDir + this.mainExe)
+					if(this.winform){this.winform.close();}
+					return ;
+				}
+			}
+			downBox.download(this.downUrl,this.exeDir + this.mainExe);
+		}else {
+			var newVer,logtxt = this.getNewVer();//最新版本号
+			if(newVer){
+				newVernum = string.replace(newVer,"\.","");
+				ver = string.replace(ver,"\.","");
+				if(tonumber(newVernum)>tonumber(ver)){	//有新版本
+					bool = true;
+					var str = "有新的版本[" + newVer + "]是否现在更新?" + '\n' + logtxt;
+					if(!up){
+						ok = win.msgboxTest(str,"更新")
+					}else {
+						ok = true;
+						win.msgbox(str,"更新");
+					}
+					if(ok){
+						fsys.createDir(this.updateDir)
+						process.kill(this.updateExe)
+						win.delay(100)
+						io.remove(this.updateDir + this.updateExe);//删除更新文件
+						sleep(500);
+						var updateExePath = fsys.joinpath(this.updateDir,"\" + this.updateExe);
+						fsys.copy(io._exepath,updateExePath);//复制到临时目录
+						sleep(500);
+						if(io.exist(updateExePath)){
+							process(updateExePath,"-update");//命令参数 cmd
+						}else {
+							ok = win.msgboxTest("无法启动更新程序,是否手动下载最新版？","错误");
+							if(ok){
+								win.msgbox("下载后请手动覆盖" + this.mainExe + "即可","提示")
+								process.execute(this.downUrl);
+							}
+						}
+						if(this.winform){this.winform.close();}
+						return true;
+					}
+				}
+			}
+			process.kill(this.updateExe)
+			win.delay(100)
+			//io.remove(this.updateDir + this.updateExe);//删除更新文件
+			io.remove(this.updateDir + this.updateExeOld);
+			io.remove(this.exeDir + this.mainExe + ".dowload")
+			io.remove(this.exeDir + this.mainExe + ".dow!oad")
+			return bool,newVer;
+		}
+	}
+}
+
+namespace update{
+	import win;
+	import fsys;
+	import process;
+	import inet.downBox;
+	import inet.http;
+
+	string = ..string;
+	table = ..table;
+	io = ..io;
+	time = ..time;
+	
+	if( _STUDIO_INVOKED ){
+		import ide
+	}
+	projectDir = _STUDIO_INVOKED == "thread" ? ide.getProjectDir() : "\";
+	
+	//获取当前版本号
+	getVersion = function(res = "res"){
+		if( !_STUDIO_INVOKED ){
+			return string.load("\" ++ res ++ "\version.txt"); 
+		}
+		var file = res ++ "\version.txt";
+		
+		var version = string.load(projectDir ++ file):""
+		if(version == ""){
+			version = "1.0.02";
+			string.save(projectDir + file, version);
+		}
+		return calVersion(version,-1),file; 
+	};
+	
+	//计算版本号增加或减少
+	calVersion = function(version,n=1){
+		version = string.replace(version,"\.","");
+		version = tostring((tonumber(version)) + n);//版本号加n，下次发布用
+		major,minor,build = string.sub(version,-#Ver,-4),string.sub(version,-3,-3),string.sub(version,-2,-1);
+		version = major + "." + minor + "." + build;
+		return version; 
+	}
+		
+	saveNextVersion = function(res = "res"){	
+		if(_STUDIO_INVOKED){	
+			var version,file = getVersion(res);//版本号 	
+			version = calVersion(version,2);//下个版本
+			string.save(projectDir + file, version)
+		}
+	};
+	
+	updateWeb = function(exeName,res = "res"){
+		if(_STUDIO_INVOKED){
+			var updateDir = projectDir + "Publish\update\";
+			fsys.createDir(updateDir)
+			var html = "ver=[%s]" + '\r\n' + "log=[" + '\r\n' + "%s" + '\r\n' + "]" + '\r\n';
+			var version = getVersion(res);
+			version = calVersion(version,1);//当前个版本
+			var t = time();
+			t.format="%Y-%m-%d";
+			var log = tostring(t) + "更新日志:"
+			var updatefile = updateDir + "index.html";
+			var logtxt = string.load(updatefile):"";
+			html = string.format(html,version, log)
+			string.save(updatefile,html + logtxt);
+			
+			var updateExe = updateDir + exeName + ".exe";
+			io.remove(updateExe)
+
+			var upxExe = projectDir + "Publish\" + exeName + ".upx.exe";
+			var mainExe = projectDir + "Publish\" + exeName + ".exe";
+			if(io.exist(upxExe)){
+				fsys.copy(upxExe,updateExe);
+			}else {
+				fsys.copy(mainExe,updateExe);
+			}
+		}
+	}	
+
+}
+
+
+/**intellisense()
+carl.update = 自动更新库
+?carl.update = !update.
+carl.update(updateUrl, downUrl, mainExe, winform, _CMDLINE ) = 版本url,程序下载url,主程序名,主窗体,启动参数
+update.checkUpdate(_) = 参数版本号
+carl.update.getVersion() = 获取当前程序版本
+carl.update.saveNextVersion() = 保存下一次版本号,请在updateWeb()后执行,本函数尽限ide环境中使用
+carl.update.updateWeb() = 发布网站上的更新内容,请在saveNextVersion()之前执行,本函数尽限ide环境中使用
+end intellisense**/

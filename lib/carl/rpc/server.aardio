@@ -1,0 +1,59 @@
+﻿//server 服务端
+namespace carl.rpc
+
+server = class {
+	ctor( rsaPrivateKey ){
+		this.rsaPrivateKey = rsaPrivateKey;
+		if( !..request ) error("只能在rpc服务端调用",2);
+	};
+	
+	receive = function(){
+		var postdata = ..request.postData(); //.server["HTTP_RAW_POST_DATA"];
+		var funcName = ..request.get["op"];
+		var code = ..request.get["code"]:"";
+		if( !#funcName ) return ; 
+		if( # this.rsaPrivateKey ){
+			postdata = carl.rsa.decrypt(postdata, this.rsaPrivateKey);
+			if( !postdata ) return null,"Decryption post data error";
+		}
+		var tab,err;
+		try{
+			if( string.cmpMatch(code,"aardio" ) ){
+				tab = eval(postdata)
+			}else {
+				tab = web.json.parse(postdata);
+				if(tab) ..carl.rpc.unformat(tab);
+			}
+		}
+		catch(e){
+			err = e;
+		}
+		if( !tab ) return null,"carl.rpc.receive() parameter error," ++ (err:"");
+		return funcName,table.unpackArgs(tab);
+	}
+	
+	reply = function( ... ){
+		var t = {...};
+		carl.rpc.format(t);
+		return web.json.stringify(t); 
+	}
+	
+}
+
+namespace server{
+	import carl.rsa;
+	import carl.rpc;
+	import web.json;
+	
+	table = ..table;
+	string = ..string;
+}
+
+
+/**intellisense()
+carl.rpc.server = rpc服务端
+carl.rpc.server( rsaPrivateKey ) = 创建rpc服务端，参数是RSA私钥,解密客户端发送的数据\n(参数可忽略，为空不解密,客户端RSA公钥也需对应为空)
+carl.rpc.server() = !server.
+!server.receive() = 接收客户端发送的数据，返回调用的函数名，及参数
+!server.reply(text) = 回复内容给客户端，支持多个参数，参数支持5种基本数据类型:null,table,string,boolean,number
+end intellisense**/

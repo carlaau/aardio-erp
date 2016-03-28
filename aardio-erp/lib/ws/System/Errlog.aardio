@@ -1,0 +1,34 @@
+﻿
+namespace ws.System.Errlog
+
+import ws.sql;
+import ws.System;
+import carl.update;
+import console;
+
+var tablename = "errlog";
+
+var Ver = carl.update.getVersion();//版本号
+
+/*intellisense(ws.System.Errlog)*/
+
+insert = function(tab){
+	var sql = ws.sql.getInsertSql(tablename, tab);
+	var ok,err = ws.System.exec(sql)
+	return ok,err; 
+}
+
+onError = function(err){
+	if( _STUDIO_INVOKED ){
+		console.log("global",err)
+		return ; 
+	}
+	var t = {}
+	t["ver"] = Ver;
+	t["err"] = err;
+	t["username"] = ..tabLoginInfo[["NickName"]] : ..thread.get("tabLoginInfo")[["NickName"]];
+	t["dtime"] = ws.getServerTime();
+	insert(t);
+}
+
+/*end intellisense*/

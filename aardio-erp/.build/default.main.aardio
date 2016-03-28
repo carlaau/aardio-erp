@@ -1,0 +1,12 @@
+//此触发器在生成EXE以后执行
+import ide;
+import carl.update;
+import carl.upx;
+
+//carl.upx();//加壳
+
+var exeName = ide.getPublishName();
+exeName = string.replace(exeName,"\.exe","")
+carl.update.updateWeb(exeName);//发布更新网站
+
+carl.update.saveNextVersion();//版本号加1并保存

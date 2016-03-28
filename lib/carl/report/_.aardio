@@ -1,0 +1,67 @@
+﻿import carl.report.template;
+
+namespace carl.report
+
+//日周月报表
+MonthWeeklyDay = function(func, sort, reportType, startDate, endDate, ... ){
+	if( reportType == "日报"){
+		reportType = "2";
+	}
+	elseif( reportType == "周报"){
+		reportType = "0";
+	}
+	elseif( reportType == "月报"){
+		reportType = "1";
+	}
+	var tab,err = {};
+	var date1 = startDate;
+	var date2 = endDate;
+	if(reportType == "0"){//周报,每周是从星期一开始
+		date1.addday(1-date1.dayofweek)
+		date2.addday(7-(date2.dayofweek:7))
+		dt = date2.diffday(date1);
+		dt = dt>=7 ? (tonumber(dt/7,10)) : 0;//相差周数
+		dt = ..math.modf(dt);
+		date2.addday(-6);
+	}
+	else if(reportType == "1") {//月报
+		dt = date2.diffmonth(date1);
+	}
+	else {//日报
+		dt = date2.diffday(date1);
+	}
+	var date,startnum,endnum,num,weeknum,dtnum;
+	if(sort == "升序"){
+		date = date1;
+		startnum = 0; endnum = dt; num = 1;
+		weeknum = 7; dtnum = 1;
+	}else {
+		date = date2;
+		startnum = dt; endnum = 0; num = -1;
+		weeknum = -7; dtnum = -1;
+	}
+	date.format = "%Y-%m-%d";
+	for(i=startnum;endnum;num){
+		var t,err = func(tostring(date), reportType, ...);
+		if(t and #t){
+			..table.push(tab, ..table.unpack(t));
+		}elseif(err) {
+			return null,err;
+		}
+		
+		if(reportType == "0"){
+			date.addday(weeknum);
+		}else if(reportType == "1") {
+			date.addmonth(dtnum);
+		}else {
+			date.addday(dtnum);
+		}
+		..win.delay(1)
+	}
+	return tab,err; 
+}
+
+/**intellisense()
+carl.report = 报表
+carl.report.MonthWeeklyDay(func,sort,reportType,startDate,endDate,"func其他参数" ) = 生成日,周,月报表数据\nfunc:回调函数(日期,报表类型,其他参数)\n 如ws.Order.sp_WeeklyMonthShopReport\nsort:升序或降序\nreportType:报表类型 日报,周报,月报,\n时间对像，其他参数
+end intellisense**/

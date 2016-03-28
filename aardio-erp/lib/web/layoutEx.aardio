@@ -1,0 +1,182 @@
+﻿
+import win;
+import web.layout; 
+import web.layout.behavior.windowCommand;
+import web.layout.behavior.titleMenu;
+import web.layout.behavior.msgbox;
+import web.layout.debug;
+import win.ui.shadow;
+
+namespace web{
+
+	layoutEx = class {
+		ctor( winform,url,menu = true ){
+			this = ..web.layout( winform );
+			..win.ui.shadow(winform); //添加阴影边框
+			if( _STUDIO_INVOKED ){
+				this.attachEventHandler( ..web.layout.debug );
+			}
+			this.go(url);
+			this.wait();
+			if(winform.max === false) this.querySelector( "[command='window-max']").command = "";//禁用双击标题最大化
+			if(!menu) this.getEle("windowmenu").style.display = "none";
+			var ele = this.getEle("mainTitle");
+			if(ele) ele.innerText = winform.text;
+		};
+		
+		msgbox = function(str,title,style){
+			return msgbox(str,title,style,winform);
+		}
+		msgboxTest = function(str,title){
+			return msgboxTest(str,title,winform)
+		}
+		msgboxErr = function(str,title){
+			return msgboxErr(str,title,winform)
+		}
+		
+		["select"] = function(eleName,v,sel=true){ 
+			var opt,child,value,text;
+			var ele = this.getEle(eleName);
+			if( string.cmp(ele.tagName,"select") ) return ;
+			if(ele){
+   				if(type(v)==type.number and v < ele.length){
+   	   				opt = ele.options[i];
+   				}else{
+   					v = sel ? string.lower(v) : v;
+   	   				for(i=0;ele.length-1;1){
+   	   					child = ele.options[i];
+   	   					if( !child ) continue ;
+   	   					value = sel ? string.lower(child.value) : value;
+   	   					text = sel ? string.lower(child.text) : text;
+						if(value == v or text == v){
+							opt = child;
+							break ;
+						}
+					}
+   				}
+			} 
+			if( opt ){
+				opt.selected = true;
+				if( ele.onchange ) ele.fireEvent("onchange");
+			}
+			return opt; 
+		}
+		
+		setEle = function(eleName,val,name){ 
+			var ele = this.getEle(eleName);
+			if(!ele) return null,"未找到节点";
+			
+			if( type(val) == type.table ){
+				for(k,v in val) 
+					this.setEle(eleName,v,k,frame); 
+			}
+			elseif(name){ 
+				ele[name] = val; 
+			}
+			elseif( string.cmp(ele.tagName,"textArea") == 0  ){
+				ele.innerHTML = val;
+			}
+			elseif( !string.cmp(ele.tagName,"input") ){
+				select(ele.type) { 
+					case "radio","checkbox" {
+						ele.state.checked = val;
+					};
+					else {
+						ele.value = val;
+					};
+				};
+			}; 
+			elseif(  string.cmp(ele.tagName,"select") == 0 ){
+				this.select( eleName,val );
+			}
+			return ele;
+		}; 
+		
+		getEleValue = function(eleName){
+			var ele = this.getEle(eleName);
+			if(!ele) return null,"未找到节点";
+			if( string.cmp(ele.tagName,"textArea") == 0  ){
+				return ele.innerHTML;
+			}
+			elseif( !string.cmp(ele.tagName,"input") ){
+				select(ele.type) { 
+					case "radio","checkbox" {
+						return ele.state.checked;
+					};
+					else {
+						return ele.value;
+					};
+				};
+			}; 
+			elseif(  string.cmp(ele.tagName,"select") == 0 ){
+				return this.$1("option:checked").getAttribute("value"); 
+			}
+		}
+		
+		bindConfig = function(cfgFile){
+			if( type(cfgFile.save) != "function" )
+				error("无效配置文件",2);
+			for(name,value in cfgFile){
+				var ele = this.getEle(name);
+				if(!ele) continue ;			
+				this.setEle(name,value);
+			}
+			cfgFile.beforeSave = function(){
+				if( winform._hasBeenDestroyed ){return;}
+				var tag = {"input";"select";"textArea"}
+				for(k,tagName in tag){
+					var eles = this.$(tagName);
+					for(i=1;#eles;1){
+						var name = eles[i].id : eles[i].name;
+						if(!name) continue ;
+						cfgFile[name] = this.getEleValue(name)
+					}
+				}
+			};
+			winform.onClose = function(){
+				cfgFile.beforeSave();
+			}; 
+		};
+	}
+	
+	namespace layoutEx{	
+		string = ..string;
+		table = ..table;
+		
+		msgbox = function(str,title,style,form){
+			return loadcode($"\lib\web\layout\msgbox.aardio")(form,str,title,style);
+		}
+		msgboxTest = function(str,title,form){
+			return msgbox(str,title,0x1 | 0x20 /*_MB_OKCANCEL|_MB_ICONQUESTION*/,form ) == 1;	
+		}
+		msgboxErr = function(str,title,form){
+			return msgbox( str,title,0x10/*_MB_ICONHAND*/,form );
+		}
+	}
+}
+
+if(_reWinMsgbox) return ; 
+var msgbox = win.msgbox;
+win.msgbox = function(...){//重写win.msgbox函数，影响全局
+	var text,title,style,hwndOwner = ...;
+	if(!hwndOwner) hwndOwner = win.getForeground();
+	var form = win.form.getForm(hwndOwner);
+	if(form){
+		return web.layoutEx.msgbox(text,title,style,form); 
+	}else {
+		return msgbox(...); 
+	}
+}
+_reWinMsgbox = true;
+
+/**intellisense()
+web.layoutEx = HTMLayout扩展库
+web.layoutEx( __/*winform对象*/,__/*url路径*/ ) = 创建HTMLayout窗体
+?web.layoutEx = !weblayout.
+!weblayout.msgbox(.("文本","标题",样式) = 弹出对话框\n除参数一以外,所有参数可选
+!weblayout.msgboxErr(.("文本","标题") = 弹出错误对话框
+!weblayout.msgboxTest(.("文本","标题")  = 返回布尔值表示用户是否按了“确定”按钮。\n标题参数可选 
+!weblayout.setEle(eleName,value) = 设置节点值
+!weblayout.getEleValue(eleName) = 读取节点值
+!weblayout.bindConfig(config配置文件) = @??.bindConfig(config.winform);//自动保存表单
+end intellisense**/

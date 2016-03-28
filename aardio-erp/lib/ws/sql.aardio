@@ -1,0 +1,22 @@
+﻿
+namespace ws.sql
+
+/*intellisense(ws.sql)*/
+
+getInsertSql = function(tabname, tab, utf8){
+	var drive = ..config[["__drive"]] : ..thread.get("config.__drive") : "mysql";
+	
+	return (drive=="mysql") ?
+		..carl.sql.my.getInsertSql(tabname, tab, utf8) :
+		..carl.sql.ms.getInsertSql(tabname, tab, utf8);
+}
+
+getUpdateSql = function(tabname, tab, where, utf8){
+	var drive = ..config[["__drive"]] : ..thread.get("config.__drive") : "mysql";
+	
+	return (drive=="mysql") ?
+		..carl.sql.my.getUpdateSql(tabname, tab, where, utf8) :
+		..carl.sql.ms.getUpdateSql(tabname, tab, where, utf8);
+}
+
+/*end intellisense*/

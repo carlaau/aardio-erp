@@ -1,0 +1,47 @@
+import fastcgi;
+import fastcgi.client;
+import fsys.log;
+
+import carl.rpc.server;
+import carl.mssql;
+import carl.mysql;
+import carl.oracle;
+
+global.onError = function( err,over ){ 
+    if(!over){
+        import debug;
+        var stack = debug.traceback(,"调用栈",3);
+        err =  ..string.concat(err,'\n',stack);
+    }
+    
+    fsys.log.print( ..string.replace(err,"![\r\n]\n",'\r\n')  ); //CGI级别错误写入日志
+} 
+
+var fcgiClient = fastcgi.client();
+
+fcgiClient.run(
+	function(response,request){
+	 
+	 	/*
+		500错误应用级别的错误服务器上本地打开网页可以看到,
+		CGI级别的错误请查看"CGI.EXE目录/config"下面生成的日志文件
+		*/
+	 	response.loadcode( request.path );//参数可省略 
+	} 	
+);
+
+/*
+此程序应先生成EXE文件、并在web服务器上注册为fastcgi模块才能使用，
+以 win2008 ,IIS7为例(网上教程很多，请自行查找详细教程)
+
+1、桌面右键点【计算机】，弹出菜单中点【管理】，【添加角色/添加IIS】
+2、右键点【Web服务器(IIS)】，弹出菜单中点【添加角色服务】，确认已添加【CGI】
+3、然后打开IIS，到指定的网站点击【处理程序映射】，添加【处理程序映射】
+   后缀名设为：*.aardio ( 如果设为 *,取消勾选请求限制到文件或目录则处理所有URL )
+   模块选：FastCgiModule
+   可执行文件：选中使用本工程生成的 aardio-cgi.exe 即可
+   
+注意工程内的发布前触发器,
+\.build\default.init.aardio 会在每次发布前停止已运行的CGI进程，
+这个操作需要管理权限如果在本机上安装IIS测试，本机测试建议以管理权限启动aardio开发环境
+*/

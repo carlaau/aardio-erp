@@ -1,0 +1,88 @@
+
+namespace sqlhelper
+
+import carl.mssql;
+import carl.mysql;
+import carl.oracle;
+
+var driver = ..config.driver;
+
+connect = function(){
+	var conn,err;
+	try{
+		if(driver == "mssql"){
+			var name = "";
+			if(#..config.msname) name = "\" + ..config.msname;
+			conn,err = carl.mssql(..config.host ++ "," ++ ..config.port ++ name,..config.dbname,..config.username,..config.password);
+		}
+		elseif(driver == "mysql"){
+			conn,err = carl.mysql(..config.host ++ ":" ++ ..config.port,..config.dbname,..config.username,..config.password);
+		}
+		elseif(driver == "oracle"){
+			conn,err = carl.oracle(..config.host,..config.dbname,..config.username,..config.password,..config.port,..config.provider);
+		}
+	}
+	catch(e){
+		err = e;
+	}
+	return conn,err;
+}
+
+exec = function( ... ){
+	var conn,err = connect();
+	if(!conn) return null,err;
+	var ok,err = conn.exec( ... );
+	conn.close();
+	conn = null;
+	return ok,err; 
+}
+
+getTable = function( ... ){
+	var conn,err = connect();
+	if(!conn) return null,err;
+	var t,err = conn.getTable( ... );
+	conn.close();
+	conn = null;
+	var fields;
+	if(t){
+		fields = t["fields"];
+		t["fields"] = null;
+	}
+	return t,err,fields;
+}
+
+getTables = function( tsql ){//执行多个select语句,参数table对像
+	var conn,err = connect();
+	if(!conn) return null,err;
+	var tab,err = {};
+	for(i=1;#tsql;1){
+		var t,e = conn.getTable(tsql[i]);
+		if(!t){
+			tab = null;
+			err = e;
+			break;
+		}
+		..table.push(tab,t);
+	}
+	conn.close();
+	conn = null;
+	return tab,err;
+}
+
+transaction = function( ... ){//事务执行，参数table对像
+	var conn,err = connect();
+	if(!conn) return null,err;
+	var ok,err = conn.transaction( ... );
+	conn.close();
+	conn = null;
+	return ok,err;
+}
+
+storedProcedures = function( ... ){//存储过程
+	var conn,err = connect();
+	if(!conn) return null,err;
+	var t,err = conn.storedProcedures( ... );
+	conn.close();
+	conn = null;
+	return t,err;
+}

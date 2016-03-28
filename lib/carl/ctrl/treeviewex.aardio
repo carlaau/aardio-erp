@@ -1,0 +1,112 @@
+﻿//treeviewex 树形扩展控件
+namespace carl.ctrl.treeviewex{}
+
+//treeview 树形控件
+import win.ui.ctrl.metaProperty;//导入控件属性元表支持
+namespace win.ui.ctrl; 
+
+class treeviewex{
+    ctor(treeview){ 
+    	this = treeview;
+    	this.exIsToggle = true;
+		this.exIsChecked = true;
+    }
+    
+	exOnnotify = function(id,code,ptr){
+		if( code == 0xFFFFFFFE/*_NM_CLICK*/ ){
+        	var hItem,ht = this.hitTest()
+        	select(ht) {
+            	case 4/*_TVHT_ONITEMLABEL你点在文本上了*/{
+            		if(this.exIsToggle){//展开
+                		this.setSelected(hItem)
+                		this.toggle(hItem)
+                	}
+                	if(this.exMouseClick){//单击事件
+                		this.exMouseClick(hItem)
+                	}
+            	}
+            	case 0x40/*_TVHT_ONITEMSTATEICON你点在状态图标上了*/{
+                	if(this.exIsChecked){
+                		this.exClickSetChecked(hItem);
+                	}
+            	}
+            	case 8/*_TVHT_ONITEMINDENT你点在缩进部分了*/{
+	
+            	}
+            	case 2/*_TVHT_ONITEMICON你点在图标上了*/{
+	
+            	}
+            	case 0x10/*_TVHT_ONITEMBUTTON你点在项目按钮上了*/{
+	
+            	}
+            	else {//你点在空白部份了
+	
+            	}
+        	}
+    	}
+	}
+	
+	exExpandAll = function(){
+		this.enum(
+			function(hItem,parent){
+				this.expand(hItem)
+			}
+		)
+	}
+	
+	exClickSetChecked = function(hParent){
+		this.setSelected(hParent)	
+		var bool = !this.getChecked(hParent);
+		if(this.exCheckBoxesChanged){
+			this.exCheckBoxesChanged(hParent, bool);//选中事件
+		}
+		var eachChild,eachParent;
+		eachChild = function(hParent){//全选或不选子项
+			this.expand(hParent);
+			for hItem in this.each(hParent){
+				this.setChecked(hItem, bool);
+				if(this.exCheckBoxesChanged){
+					this.exCheckBoxesChanged(hItem, bool);//选中事件
+				}
+				eachChild(hItem)
+			}
+		}
+		eachParent = function(hItem,bool){//只要其中一个子项选中，父项也选中，否则不选
+			var hParent = this.getParentItem(hItem);
+			if(hParent){
+				var ok = false; 
+				for hchild in this.each(hParent){
+					if(hchild != hItem && this.getChecked(hchild)){
+						ok = true;
+						break ;
+					}
+				}
+				bool = ok || bool;
+				this.setChecked(hParent, bool);
+				if(this.exCheckBoxesChanged){
+					this.exCheckBoxesChanged(hParent, bool);//选中事件
+				}
+				eachParent(hParent,bool)
+			}
+		}
+		eachParent(hParent,bool)
+		eachChild(hParent);
+	}
+}
+
+
+/**intellisense()
+win.ui.ctrl.treeviewex = 树形扩展控件
+win.ui.ctrl.treeviewex(.(treeview控件) = treeview控件
+?win.ui.ctrl.treeviewex = !treeview.
+!treeview.exExpandAll() = 展开全部节点
+!treeview.exIsToggle = @.exIsToggle = true;//是否开启 点击节点时折叠的就展开，展开的就折叠，\n开启:true,关闭:false，默认已开启
+!treeview.exIsChecked = @.exIsChecked = true;//是否开启以下两个功能\n1.打勾节点则全选所有子节点,不打勾则全不选子节点，\n2.子节点其中一个打勾,则父节点打勾,\n开启:true,关闭:false，默认已开启
+!treeview.exOnnotify = @.onnotify = function(id,code,ptr) {
+	/*响应通知*/
+	
+	return ??.exOnnotify(id,code,ptr); 
+};
+!treeview.exCheckBoxesChanged = @.exCheckBoxesChanged = function(hItem, checked){\n	__\n}//选中事件
+!treeview.exMouseClick = @.exMouseClick = function(hItem){\n	__\n}//单击事件
+end intellisense**/

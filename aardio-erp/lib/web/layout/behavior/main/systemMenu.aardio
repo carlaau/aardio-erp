@@ -1,0 +1,15 @@
+﻿
+namespace web.layout.behavior.main.systemMenu
+
+onMenuItemClick = {
+
+	//匹配不到id的节点会触发default函数*/
+	default = function (ltTarget,ltOwner,reason,behaviorParams) {
+		var ltPopupOwner = ..web.layout.element( behaviorParams.he );//这是弹出菜单的按钮节点
+		if(ltTarget.innerText == "修改密码"){
+			..mainForm.loadForm(ltTarget.path)
+		}else {
+			..mainFormTabCtrl.addTabForm(ltTarget.path, ltTarget.innerText, ltTarget.id);//打开选项卡
+		}
+	}
+}

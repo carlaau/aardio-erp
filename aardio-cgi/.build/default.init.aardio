@@ -1,0 +1,4 @@
+//发布前触发
+import ide;
+import process.file;
+process.file.terminate( ide.getPublishPath() );

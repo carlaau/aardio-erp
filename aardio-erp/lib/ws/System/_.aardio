@@ -1,0 +1,67 @@
+﻿//系统数据库
+namespace ws.System
+
+var servUrl = "/system/rpc.aardio";//ahtml-rpc服务端URL
+
+ahtmlServer = function(funcName,...){
+	var ok,err = checkToken()
+	if(!ok) return null,err; 
+	return ..ws.ahtmlServer(servUrl, funcName, ...); 
+}
+
+checkToken = function(){
+	var token = ..thread.get("ApiToken");
+	if(!token) return true;
+	var sql = "select count(*)as num from SystemUser where Token='" + token + "'";
+	var ok,t = ..ws.ahtmlServer(servUrl, "getTable",sql);
+	if( ok ){
+		var t,err = ..table.unpackArgs(t);
+		if(!t or !#t) return null,err;
+		return tonumber(t[1]["num"])," Token失效,请重新登录";
+	}
+	return null,t;
+}
+
+exec = function( ... ){
+	var ok,t = ahtmlServer("exec", ... );
+	if( ok )
+		return ..table.unpackArgs(t);
+	return null,t;
+}
+
+getTable = function( ... ){
+	var ok,t = ahtmlServer("getTable", ... );
+	if( ok ){
+		var tab,err,fields = ..table.unpackArgs(t);
+		if(tab) tab["fields"] = fields;
+		return tab,err;
+	}
+	return null,t;
+}
+
+transaction = function( ... ){//事务执行,参数table
+	var ok,t = ahtmlServer("transaction", ... );
+	if( ok )
+		return ..table.unpackArgs(t);
+	return null,t;
+}
+
+sp_getPrimaryKey = function(tablename){//返回表新增主键
+	var ok,t = ahtmlServer("storedProcedures", "sp_getPrimaryKey", tablename);//执行存储过程
+	if( ok ){
+		var t,err = ..table.unpackArgs(t);
+		if(t) return t[1]["PrimaryKey"]; 
+		return null,err;
+	}
+	return null,t;
+}
+
+getServerTime = function(){
+	var ok,t = ahtmlServer("getServerTime");
+	if( ok )
+		return ..table.unpackArgs(t);
+		
+	var t = ..time();
+	t.format="%Y-%m-%d %H:%M:%S";
+	return tostring(t); 
+}

@@ -1,0 +1,171 @@
+//comboboxex 下拉多选框
+namespace carl.ctrl.comboboxex{}
+
+import win.ui.tracker;
+import win.ui.ctrl.metaProperty;
+
+namespace win.ui.ctrl; 
+
+class comboboxex{
+	ctor(parent,tParam){
+	
+/*DSG{{*/
+this = win.form(text="aardio form";right=100;bottom=25;border="none";exmode="none";mode="child";parent=parent;tParam=tParam)
+this.add(
+btn={cls="button";text="u";left=82;top=1;right=100;bottom=25;dr=1;dt=1;font=LOGFONT(name='Marlett';charset=2;weight=500);tabstop=1;z=2};
+edit={cls="edit";left=1;top=1;right=82;bottom=25;autohscroll=false;autovscroll=false;dl=1;dr=1;dt=1;edge=1;hidesel=1;readonly=1;z=1}
+)
+/*}}*/
+
+		this.btn.oncommand = function(id,event){
+			this.hideForm();
+		}
+		var winform = ..win.form(right=100;bottom=100;border="none";exmode="none";parent=this);
+		winform.add(treeview={cls="treeview";left=0;top=0;right=100;bottom=100;ah=1;asel=false;aw=1;bgcolor=16777215;chkBox=1;db=1;dl=1;dr=1;dt=1;edge=1;hscroll=1;singleExpand=false;vscroll=1;z=1});
+		this.tvEx = ..win.ui.ctrl.treeviewex(winform.treeview);
+		this.startFirst = false;
+
+		this.onDestroy = function(){
+			winform.close();
+		}
+		
+		var fromPoint = ::User32.api("WindowFromPoint", "int(int x, int y)");
+		
+		..win.ui.tracker(this.btn).onMouseLeave = function(wParam,lParam){
+			while(true){
+				var hwnd = fromPoint(..win.getMessagePos());
+				if(hwnd != winform.treeview.hwnd && hwnd != this.edit.hwnd){
+					if(this.isShow) this.hideForm();
+					break ;
+				}
+				..win.delay(1000)
+			}
+		}
+	};
+
+	onCreate = function(){
+		this.tvEx.exCheckBoxesChanged = function(hItem, checked){//选中事件
+			var tab = this.tvEx.getItemData(hItem);
+			if(tab) tab.checked = checked;
+
+			var t = {};
+			this.tvEx.enum(
+				function(hItem,parent){
+					var tab = this.tvEx.getItemData(hItem);
+					var child = false;
+					for h in this.tvEx.each(hItem){
+						child = true;
+						break ;
+					}
+					if(tab && tab.checked && !child) table.push(t,tab.text)
+				}
+			)
+			this.edit.text = string.join(t,";");
+			this.text = this.edit.text;
+		}
+		this.tvEx.onnotify = function(id,code,ptr) {
+			/*响应通知*/
+			return this.tvEx.exOnnotify(id,code,ptr); 
+		};
+		this.edit.text = this.text;
+	}
+	
+	hideForm = function(){
+		var show = this.btn.text=="u" ? true : false;
+		this.btn.text = this.btn.text=="u" ? "t" : "u";
+		var x,y,cx,cy = ..win.getPos(this.hwnd,true);
+		winform.setPos(x,y+cy-2,cx,200);
+		winform.show(show);
+		if(show && !this.startFirst){
+			..win.delay(200);
+			this.setChecked();
+			this.startFirst = true;
+		}
+		this.isShow = show;
+	}
+	
+	insertItem = function(...){
+		this.tvEx.insertItem(...);
+		this.tvEx.exExpandAll();
+		this.edit.text = this.text;
+		this.setChecked();
+		this.tvEx.ensureVisible(this.tvEx.getRoot())
+	}
+	
+	setChecked = function(){
+		var tabchecked = string.split(this.text,";");
+		this.tvEx.enum(
+			function(hItem,parent){
+				var tab = this.tvEx.getItemData(hItem);
+				if(tab){
+					if(table.find(tabchecked,tab.text)){
+						tab.checked = true;
+						this.tvEx.setChecked(hItem,true)
+					}else {
+						tab.checked = false;
+						this.tvEx.setChecked(hItem,false)
+					}
+				}
+			}
+		)
+	}	
+	
+	getChecked = function(key){
+		var t = {};
+		this.tvEx.enum(
+			function(hItem,parent){
+				var tab = this.tvEx.getItemData(hItem);
+				if(tab && tab.checked){
+					var tc = table.clone(tab);
+					for(i=1;#tc;1) table.remove(tc);
+					if(key){
+						table.push(t,tc[key])
+					}else {
+						table.push(t,tc)
+					}
+				}
+			}
+		)
+		return t; 
+	}
+	
+	getKey = function(key){
+		var t = {};
+		this.tvEx.enum(
+			function(hItem,parent){
+				var tab = this.tvEx.getItemData(hItem);
+				if(tab){
+					var tc = table.clone(tab);
+					for(i=1;#tc;1) table.remove(tc);
+					if(key){
+						table.push(t,tc[key])
+					}else {
+						table.push(t,tc)
+					}
+				}
+			}
+		)
+		return t;
+	}
+	
+
+}
+
+namespace comboboxex{
+	import carl.ctrl.treeviewex;
+	
+	string = ..string;
+	table = ..table;
+	win = ..win;
+}
+
+/*intellisense()
+win.ui.ctrl.comboboxex = 下拉多选控件
+win.ui.ctrl.comboboxex() = 下拉多选控件
+?win.ui.ctrl.comboboxex = !comboboxex.
+!comboboxex.insertItem(table对像) = table对象,用法与treeview.insertItem一样，
+!comboboxex.getChecked() = 返回所有选中项table对像
+!comboboxex.getChecked(key) = 返回所有选中项key值table对像
+!comboboxex.getKey() = 返回全部项table对像
+!comboboxex.getKey(key) = 返回全部项key值table对像
+end intellisense*/

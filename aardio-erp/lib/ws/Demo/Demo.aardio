@@ -1,0 +1,26 @@
+﻿
+namespace ws.Demo.Demo
+
+import ws;
+import ws.sql;
+
+string = ..string;
+table = ..table;
+
+var webservice = ws.Demo;
+var tablename = "Demo"
+
+/*intellisense(ws.Demo.Demo)*/
+
+insert = function(tab){
+	var sql = ws.sql.getInsertSql(tablename, tab);
+	return webservice.exec(sql);
+}
+
+update = function(tab, Id){
+	var sql = ws.sql.getUpdateSql(tablename, tab, "Id = '" + Id + "'");
+	var ok,err = webservice.exec(sql)
+	return ok,err;
+}
+
+/*end intellisense*/

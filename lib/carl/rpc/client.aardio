@@ -1,0 +1,87 @@
+﻿//client 客户端
+namespace carl.rpc
+
+client = class {
+	ctor( serverUrl,rsaPublicKey,... ){
+		this.serverUrl = serverUrl;
+		this.rsaPublicKey = rsaPublicKey;
+		this.code = "json";//传输协议 json,aardio
+		this.client = web.rest.client( ... );
+		
+		this.client.stringifyRequestParameters = function(postdata,utf8){
+			if( # this.rsaPublicKey ){
+				postdata,err = carl.rsa.encrypt(postdata, this.rsaPublicKey);
+				if( !postdata )	error('加密错误: ' ++ (err:""),2);
+			};
+			return postdata;
+		}
+		
+		this.client.parseResponseResult = function( html ){
+			var tab;
+			try{
+				tab = web.json.parse(html);
+			}
+			if( type(tab) == type.table ){
+				carl.rpc.unformat(tab);
+				return table.unpackArgs(tab);
+			}
+			else {
+				return null,'服务端错误: ' ++ html;
+			}
+		}
+	};
+	
+	close = function(){
+		this.client.close();
+	}
+	
+	@_meta;
+}
+
+namespace client{
+	import carl.rsa;
+	import carl.rpc;
+	import web.json;
+	import web.rest.client;
+	
+	table = ..table;
+	string = ..string;
+
+	_meta = {
+		_get = function( k ){
+			if( type(k) == "string" && k[1]=='_'# ) return; 
+			k = tostring(k); 
+			if(!k) return;
+
+			var api = {
+				_code = owner.code:"";
+				_post = owner.client.post;
+				_urlReal = owner.serverUrl + "?op=" ++ k ++ "&code=" ++ (owner.code:"") ++ "&_=" ++ ..math.random();
+				@_meta;
+			}
+			owner[[k]] = api;
+			return api;
+		}
+		_call = function( ... ){
+			var t = {...};
+			var postdata;
+			if( string.cmpMatch(owner._code,"aardio" ) ){
+				postdata = table.tostring(t);
+			}else {
+				carl.rpc.format(t);
+				postdata = web.json.stringify(t);
+			}			
+			return owner._post( owner._urlReal, postdata) ;
+		}
+	}
+}
+
+
+/**intellisense()
+carl.rpc.client = rpc客户端
+carl.rpc.client( rpcUrl,rsaPublicKey ) = 创建rpc客户端，参数1是rpc服务端URL,\n参数2是RSA公钥,数据传输启用RSA加密\n(参数2可忽略，为空不加密,服务端RSA私钥也需对应为空)
+carl.rpc.client() = !client.
+!client.服务端函数名("参数1","参数2") = 执行服务端函数,支持不定数个参数,\n可获取服务端函数的返回值\n参数支持5种基本数据类型:null,table,string,boolean,number
+!client.code = @.code = "json";//参数传输协议（json和AAuto）,默认json，AAuto是用table.tostring()传输
+!client.close() = 关闭资源
+end intellisense**/

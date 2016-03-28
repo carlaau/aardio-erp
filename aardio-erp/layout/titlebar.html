@@ -1,0 +1,27 @@
+
+<!-- 下面是标题栏按钮,必须使用a标记表示,command属性指示该按钮执行的命令,可在窗体设计器中禁用最大化、最小化按钮 --> 
+<div class="titlebox">
+    <a command="window-min" onclick="minWindow()">0</a><a command="window-max">1</a><a command="window-close" onclick="closeWindow()">r</a>
+</div>  
+
+<!-- 标题栏弹出菜单,需要弹出节点的最好用div或button等元素,不要使用a,li等元素 -->
+<div .window-menu id="windowmenu">u
+<menu .popup> <!-- .popup是内置的弹出菜单样式 -->
+  <!--<li>在线帮助</li> 
+  <li>子菜单
+    <menu >
+      <li>这是子菜单</li>
+    </menu>
+  </li>-->
+  <li #website>访问主页</li>
+  <li #update>在线升级</li>
+  <hr/>
+  <li #editPwd>修改密码</li>
+  <li #limit>重载系统数据</li>
+  <li #exit>退出</li>
+  <li id="openConsole" #openConsole>打开控制台</li>
+</menu>
+</div> 
+
+<!-- 下面是标题栏文本,凡在CSS中指定 behavior:windowCommand 的节点(含子节点) 可用 command 属性指明命令类型 -->
+<div class="title-bar" command="window-caption"> <span class=title id="mainTitle"></span></div>

@@ -1,0 +1,652 @@
+//listviewex扩展控件
+namespace carl.ctrl.listviewex{}
+
+import win.ui.ctrl.metaProperty;
+namespace win.ui.ctrl; 
+
+class listviewex { 
+	ctor(parent,tParam){
+	
+/*DSG{{*/
+this = win.form(text="aardio form";right=400;bottom=300;border="none";exmode="none";mode="child";parent=parent;tParam=tParam)
+this.add(
+listview={cls="listview";left=0;top=0;right=400;bottom=300;asel=false;bgcolor=16777215;db=1;dl=1;dr=1;dt=1;edge=1;fullRow=1;gridLines=1;hscroll=1;vscroll=1;z=1}
+)
+/*}}*/
+
+		this.isSort = true;	//开启排序
+		this.isMenu = true;	//开启右键菜单
+		this.colors = {}
+		this.colorsBk = {};
+		this.addEdit = {};//原地编辑
+		this.clickMouse = {}//鼠标形状手状
+		this.bgcolor1 = 0xffffff;
+		this.bgcolor2 = 0xf1f4e9;
+		
+		this.listview.setExtended(0x4/*_LVS_EX_CHECKBOXES*/)
+		this.listview.setExtended(0x10000/*_LVS_EX_DOUBLEBUFFER*/)//启用双缓冲,避免拖动滚动条时闪烁
+		
+		var imageList = win.imageList(1, 22);//行高
+		this.listview.setImageList( imageList, 1/*_LVSIL_SMALL*/);
+		
+		var iml = win.imageList(16, 15);
+		iml.add('GIF\56\57a \0\15\0\x80\0\0\x80\x80\x80\xff\0\xff\33\xf9\4\0\0\0\0\0\44\0\0\0\0 \0\15\0\0\2\31\x8c\x8f\xa9\xcb\xed\15\xa3\x9c\xb4N\xf0\x80\xde\56k\xbfA\\\xd7\x84 \x97Y\xea\xca\xb6\xee\11\xc7F\1\0;', 0xff00ff);
+		var hc = ::SendMessage(this.listview.hwnd, 0x101F/*_LVM_GETHEADER*/);// 取header
+		::SendMessage(hc, 0x1200 + 8/*_HDM_SETIMAGELIST*/, topointer(0), iml.handle);
+		
+		this.tooltipKey = {};//提示
+		this.tooltipAll = true;//所有鼠标提示
+		var tooltipCtr = win.ui.tooltip( this );//在窗口上创建tooltip控件 
+		var tooltipInfo = tooltipCtr.addTool(this.listview,,0x10/*_TTF_SUBCLASS*/ )
+		var lastTooltip;
+
+		..table.mix(this@, _metaProperty);
+	}
+
+    // 获取列图片
+	getColImage = function (nCol) {
+    	var col = win.ui.ctrl.listview.LVCOLUMN();
+    	col.mask = 0x1/*_LVCF_FMT*/ | 0x10/*_LVCF_IMAGE*/;
+    	col = rget(2, ::SendMessageByStruct(this.listview.hwnd, 0x1019/*_LVM_GETCOLUMN*/, nCol - 1, col));
+    	if (col.fmt & 0x800/*_LVCFMT_IMAGE*/){
+        	return col.iImage,col.fmt;
+    	}
+    	else{
+        	return -1,col.fmt;
+        }
+	}
+	    
+    // 设置列图片
+    setColImage = function (nCol, iImage = -1,fmt) {
+        fmt := 0
+        var col = win.ui.ctrl.listview.LVCOLUMN();
+        col.mask = 0x1/*_LVCF_FMT*/;
+        if (iImage == -1) {
+            col.fmt = fmt:0x0/*_LVCFMT_LEFT*/;
+        }
+        else {
+            col.mask |= 0x10/*_LVCF_IMAGE*/;
+            col.fmt = fmt|0x800/*_LVCFMT_IMAGE*/| 0x1000/*_LVCFMT_BITMAP_ON_RIGHT*/;
+            col.iImage = iImage;
+        }
+        ::SendMessageByStruct(this.listview.hwnd, 0x101A/*_LVM_SETCOLUMN*/, nCol - 1, col);
+    }
+
+    // 排序函数
+    sort = function (ind) {
+        var image,fmt = this.getColImage(ind);
+        
+        var desc = image == 0;// 已按照升序排序，则按照降序排序；其余情况按照升序排序
+        var item = win.ui.ctrl.listview.LVITEM();
+        item.mask = 0x4/*_LVIF_PARAM*/;
+        item.iSubItem = 0;
+        
+        this.cache = {};
+        for (i = 1; this.listview.count) {
+            item.iItem = i - 1;
+            item.lParam = table.push(this.cache, this.listview.getItemText(i, ind):"");
+            ::SendMessageByStruct(this.listview.hwnd, 0x1006/*_LVM_SETITEM*/, 0, item);
+        }
+        
+        var isNum = function(txt){
+        	if( !#txt ) return ; 
+        	var count = 0;
+			var num = string.replace(txt, "[^\d\-\.]", function(){ count++;return "";});
+        	if(count > 2) return ;
+			var n,len = tonumber(num);
+			if( #num == len ) return num;
+    	}
+        
+        var compare = function(lParam1, lParam2, SortType){//升序
+            var l1,l2 = this.cache[lParam1],this.cache[lParam2];
+			var n1,n2 = isNum(l1),isNum(l2);
+            if( n1 && n2 ){
+                return (tonumber(n1) - tonumber(n2)); //数字
+            }
+            else {
+                return strcmp(l1, l2); //字母
+            }
+        }
+        
+        var compareDesc = function(lParam1, lParam2, SortType){//降序
+            var l1,l2 = this.cache[lParam1],this.cache[lParam2];
+			var n1,n2 = isNum(l1),isNum(l2);
+            if( n1 && n2 ){
+                return (tonumber(n2) - tonumber(n1)); //数字
+            }
+            else {
+                return strcmp(l2, l1); //字母
+            }
+        }
+
+        cmp = ..raw.tostdcall( compare,"int(int lParam1, int lParam2, int SortType)");
+        cmpDesc = ..raw.tostdcall( compareDesc,"int(int lParam1, int lParam2, int SortType)");
+
+        ::SendMessage(this.listview.hwnd, 0x1030/*_LVM_SORTITEMS*/,topointer(ind) , desc ? cmpDesc : cmp);
+
+        this.setColImage(ind, desc ? 1 : 0, fmt);//更新列图标
+        
+        if( !this.lastSortInd ){
+            this.lastSortInd = ind;
+            this.lastSortFmt = fmt;
+        }        
+        if( ind != this.lastSortInd ){
+            this.setColImage(this.lastSortInd, -1, this.lastSortFmt);
+            this.lastSortInd = ind;
+            this.lastSortFmt = fmt;
+        }
+    }
+    
+    //////////////////////////////////////////////////////
+	set = function(key, index, value){//设置单元格内容
+		var colindex;
+		var t = this.getHead( key );
+		if( t ){
+			colindex = t.index;//第几列
+		}else {
+			for( i=1;this.listview.columnCount;1 ){
+				if( this.listview.getColumnText(i) == key ){
+					colindex = i;
+					break ;
+				}
+			}
+		}
+		if( !index or !colindex ){ return ; }
+		if( type(this.setCellBefore) == "function" ){
+			value = this.setCellBefore(value, t.key, index, colindex) : value;//显示单元格值之前加载
+		}
+		if( type(value) == type.table and value.year){//..time.istime(value)
+			value = ..time(value);
+			value.format="%Y-%m-%d %H:%M:%S";
+		}
+		if( value === 0){ value = "0";}
+		value = tostring(value:"");
+		this.setItemText(value, index, colindex)
+		if( type(this.setCellAfter) == "function" ){
+			this.setCellAfter(value, t.key, index, colindex);
+		}
+	}
+	
+	get = function( index, listname, bool){//读取列名值
+		var colindex;
+		var t = this.getHead( listname );
+		if( t ){
+			colindex = t.index;//第几列
+		}else {
+			for( i=1;this.listview.columnCount;1 ){
+				if( this.listview.getColumnText(i) == listname ){
+					colindex = i;
+					break ;
+				}
+			}
+		}
+		if( !index or !colindex ){ return ""; }
+		var txt = this.listview.getItemText(index, colindex):"";
+		if(#txt >= 259 || bool){
+			var col;
+			for( i=1;this.listview.columnCount;1 ){
+				if( this.listview.getColumnText(i) == "rowId"){
+					col = i;
+					break ;
+				}
+			}
+			var keytxt = this.listview.getItemText(index, col:1);
+			for(i=1;#this.DataTable;1){
+				var row = this.DataTable[i];
+				if(row["rowId"] == keytxt) txt = row[listname];
+			}
+		}
+		return txt;
+	}
+	
+	getRowTable = function(row,bool){//返回整行table对像
+		var trow = {};
+		for(k,t in this.tabHeads){
+			trow[t.key] = this.get(row,t.key,bool);
+		}
+		return trow;
+	}
+	
+	setRowTable = function(index,trow){//附值整行内容
+		if( type(this.setRowTableBefore) == "function" ){
+			trow = this.setRowTableBefore(index,trow) : trow;
+		}
+		for(key,value in trow){
+			this.set(key, index, value);
+		}
+		if( type(this.setRowTableAfter) == "function" ){
+			this.setRowTableAfter(index,trow);
+		}
+	}
+	
+	addItem = function( str ){
+		str := tostring(this.listview.count + 1);
+		return this.listview.addItem( str )
+	}
+	
+	setItemText = function(...){
+		return this.listview.setItemText(...)
+	}
+	
+	getItemText = function(...){
+		return this.listview.getItemText(...)
+	}
+	
+	insert = function(head, len = 70, lvcf = 0x0/*_LVCFMT_LEFT*/){
+		return this.listview.insertColumn(head, len, this.listview.columnCount + 1, lvcf)
+	}
+	
+	addHead = function(tab){//添加表头,返回列名key值在第几列table
+		this.table = tab;
+		var ts,tn,tcol = {},{},{};
+		for(i,t in tab)	table.push(t.len ? ts : tn, t)
+		for(i,t in tn)	table.push(ts, t);
+		for(i,t in ts){
+			var align = null;
+			if(t.align == "right"){
+				align = 0x1/*_LVCFMT_RIGHT*/
+			}elseif(t.align == "center"){
+				align = 0x2/*_LVCFMT_CENTER*/
+			}
+			this.insert(t.name, t.len ? t.len : 0.01,align)
+			t.index = i;
+			tcol[string.lower(t.key)] = t;
+		}
+		this.tabHeads = tcol;
+	}
+	
+	setHead = function( row ){//设置默认表头,根据sql返回的table对像的第一行
+		this.table = { {key = "rowId";name = "序号";len = 50} };
+		for(key,value in row){
+			if( key != "rowId" and key != "rowCount")
+				table.push(this.table, {key = key;name = key;len = 100});
+		}
+		this.addHead(this.table);//加载列名
+	}
+	
+	getHead = function( key,col ){
+		if( !this.tabHeads ) return ;
+		if(key){
+			key = string.lower( key );
+			return this.tabHeads[key];
+		}
+		elseif(col){
+			for(key,t in this.tabHeads){
+				if(t.index == col) return t;
+			}
+		}
+	}
+
+	getCheckedorSelected = function(checked = true, selected = true){//返回打勾或选中的行数
+		var tc,ts = {},{}
+		for(index=1;this.listview.count;1){
+			if(checked && this.listview.getChecked(index) ) table.push(tc,index);
+			if(selected && this.listview.getSelected(index) ) table.push(ts,index);
+		}
+		if( #tc ) return tc[1],tc;
+		if( #ts ) return ts[1],ts;
+	}
+	
+	showData = function( tab, pageNum, pageSize ){//显示数据列表，sql查询的table
+		this.DataTable = tab;
+		if( type(this.showDataBefore) == "function" ){
+			this.showDataBefore();//显示列表之前加载
+		}
+		var isSort = this.isSort;
+		for(i=1;#tab;1){
+			this.isSort = false;//禁止排序
+			var row = tab[i];
+			if(pageNum && pageSize){
+				row["rowId"] = (pageNum-1)*pageSize + i;
+			}
+			if(i == 1 and !this.table ){
+				this.setHead( row );	//设置默认列名
+			}
+			var index = this.addItem();//添加一行			
+			this.setRowTable(index, row);//附值整行
+			if( i % 100 == 0 ) win.delay(10);
+		}
+		if( type(this.showDataAfter) == "function" ){
+			this.showDataAfter();//显示列表之后加载
+		}
+		this.isSort = isSort;
+	}
+
+	clearRow = function(){//清空所有行
+		this.listview.clear();
+		this.colors = {};
+		this.colorsBk = {};
+		this.colorAll = null;
+	}
+	
+	clearAll = function(){//清空所有行和列
+		this.clearRow();
+		for( i=1;this.listview.columnCount;1 ){
+			this.listview.delColumn(1)
+		}
+	}
+	
+	openonnotify = function(id,code,ptr){
+		if( this.isSort ){	//排序
+			if (code == 0xFFFFFF94/*_LVN_COLUMNCLICK*/) {
+        		var nmlvw = win.ui.ctrl.listview.NMLISTVIEW();
+        		..raw.convert(ptr, nmlvw);
+        		if( this.setColorState ){//有字体颜色
+        			this.colorAll = {};
+        			this.colorAllBk = {};
+        			for(i=1;this.listview.count;1){
+        				var key = this.PrimaryKey ? this.get(i,this.PrimaryKey) : ((this.listview.getItemText( i, 1):"") ++ (this.listview.getItemText( i, 2):""));
+        				this.colorAll[key] = this.colors[i];
+        				this.colorAllBk[key] = this.colorsBk[i];
+        			}
+        		}
+            	this.sort( nmlvw.iSubItem + 1 );//排序
+            	if( this.setColorState ){//有字体颜色
+        			for(i=1;this.listview.count;1){
+        				var key = this.PrimaryKey ? this.get(i,this.PrimaryKey) : ((this.listview.getItemText( i, 1):"") ++ (this.listview.getItemText( i, 2):""));
+        				this.colors[i] = this.colorAll[key];
+        				this.colorsBk[i] = this.colorAllBk[key];
+        			}
+        		}
+        		collectgarbage("collect")
+    		}
+    	}
+    	if( this.isMenu ){	//右键菜单
+    		if (code = 0xFFFFFFFB/*_NM_RCLICK*/){
+    			var notifyMessage = this.listview.getNotifyMessage(code,ptr);
+        		if( ! notifyMessage.iItem && notifyMessage.iSubItem ) return ;
+        		
+    			this.createMenu( notifyMessage.iSubItem );//第几列
+    			var x,y = mouse.getPos()
+    			this.popmenu.popup(x,y,true);//弹出菜单
+    		}
+    	}
+    	if( code == 0xFFFFFFF4/*_NM_CUSTOMDRAW*/ ){//自绘颜色
+			var lvcd = this.listview.getNotifyCustomDraw(code,ptr);
+			if( lvcd.nmcd.dwDrawStage == 0x10001/*_CDDS_ITEMPREPAINT*/){
+				return 0x20/*_CDRF_NOTIFYSUBITEMDRAW*/
+			}elseif( lvcd.nmcd.dwDrawStage == 1/*_CDDS_PREPAINT*/ ){
+				return 0x20/*_CDRF_NOTIFYITEMDRAW*/;
+			}elseif( lvcd.nmcd.dwDrawStage == ( 0x10001/*_CDDS_ITEMPREPAINT*/ | 0x20000/*_CDDS_SUBITEM*/) ){ 
+				var row,col = lvcd.nmcd.dwItemSpec+1,lvcd.iSubItem+1;				
+				var txtcolor = this.colors[[row]][[col]];
+				var bkcolor = row%2 == 0 ? this.bgcolor2 : this.bgcolor1;
+				bkcolor = this.colorsBk[[row]][[col]] : bkcolor;
+				if(this.listview.getSelected(row) || row == this.listview.selIndex){//失去焦点保持高亮
+					txtcolor = 0xffffff;
+					bkcolor = 0xff9933;
+				}
+				lvcd.clrText = txtcolor;//字体颜色
+				lvcd.clrTextBk = bkcolor;//背景颜色
+				lvcd.update();
+				return 0/*_CDRF_DODEFAULT*/
+			}
+		}
+		if( table.count(this.addEdit) and code == 0xFFFFFFFD/*_NM_DBLCLK*/ ){//双击原地编辑
+			var notifyMessage = this.listview.getNotifyMessage(code,ptr);
+        	if( ! notifyMessage.iItem && notifyMessage.iSubItem ) return ; 
+        	var key;
+        	for(i,name in this.addEdit){
+        		var t = this.getHead(name);
+        		if(t and t.index == notifyMessage.iSubItem){
+        			key = name;
+        			break ;
+        		}
+        	}
+        	if( !key ) return ;
+        	var edit = this.listview.editlable
+        	if( ! edit ){
+            	this.listview.addCtrl(
+                	editlable = { 
+                    	cls="edit";font = LOGFONT( h = 11 );left = 0;top = 0;right = 50;bottom = 50;autoResize = false ;hide = 1;edge = 1;  
+                    	wndproc = function( hwnd, message, wParam, lParam ){
+                    		var update;
+                        	if( ( message = 0x8/*_WM_KILLFOCUS*/)  || message == 0x101/*_WM_KEYUP*/ && wParam == 0xD/*_VK_RETURN*/  ) {
+                            	update = true;
+                        	}elseif(message == 0x201/*_WM_LBUTTONDOWN*/ || message == 0x202/*_WM_LBUTTONUP*/ ){
+                        		var x,y = win.getMessagePos(lParam)
+                        		var rc = edit.clientRect;  
+                        		if( ! ::PtInRect(rc,x,y) ){
+                        			update = true;
+                        			edit.capture = false;
+                        		}else{
+                        			edit.capture = true;
+                        		}
+                        	}
+                        	if( update ){
+                            	owner.parent.setItemText( owner.text, owner.listViewNotifyMessage.iItem, owner.listViewNotifyMessage.iSubItem );
+                            	owner.show(false);
+                            	if( type(this.addEditAfter) == "function" and !owner.addEditAfterOk and owner.oldtext != owner.text){//编辑之后回调
+                            		owner.addEditAfterOk = true
+									this.addEditAfter( owner.key, owner.text, owner.listViewNotifyMessage.iItem )
+								}
+                        	}
+                    	}
+                	}
+            	)  
+            	edit = this.listview.editlable;
+        	}
+        	edit.listViewNotifyMessage = notifyMessage;
+        	edit.key = key;
+        	edit.addEditAfterOk = null;
+        	edit.text = this.listview.getItemText(notifyMessage.iItem,notifyMessage.iSubItem);
+        	edit.oldtext = edit.text;
+        	var rc = this.listview.getItemRect( notifyMessage.iItem,notifyMessage.iSubItem,,2/*_LVIR_LABEL*/ )
+        	rc.right += 5; rc.bottom += 5;
+        	edit.setRect(rc);
+        	edit.show(); 
+        	edit.setFocus();
+        	edit.capture = true;		
+		}
+		if( #this.clickMouse && code == 0xFFFFFF87/*_LVN_HOTTRACK*/){
+    		var notifyMessage = this.listview.getNotifyMessage(code,ptr);
+			var row,col = notifyMessage.iItem,notifyMessage.iSubItem;
+        	if( !row ) return ;
+    		var key;
+        	for(i,name in this.clickMouse){
+        		var t = this.getHead(name);
+        		if(t and t.index == col){
+        			key = name;
+        			break ;
+        		}
+        	}
+        	if( key ) win.cur.setCur(hwndmouse);//鼠标形状变成手状
+    	}
+		if( (# this.tooltipKey || this.tooltipAll) && code == 0xFFFFFF87/*_LVN_HOTTRACK*/){ //鼠标提示
+			var notifyMessage = this.listview.getNotifyMessage(code,ptr);
+			var row,col = notifyMessage.iItem,notifyMessage.iSubItem;
+        	if( !row ) return ;
+        	var tooltipstr = tostring(row) ++ tostring(col);
+        	if(lastTooltip == tooltipstr) return ;
+        	lastTooltip = tooltipstr;
+        	var txt,colname;
+			if(# this.tooltipKey){
+        		for(i,name in this.tooltipKey){
+        			var t = this.getHead(name);
+        			if(t and t.index == col){
+        				colname = name;
+        				break ;
+        			}
+        		}
+        	}elseif(this.tooltipAll){
+        		for(i,t in this.tabHeads){
+					if(t.index == col){
+						colname = t.key;
+						break ;
+					}
+				}
+        	}
+        	if(colname) txt = this.get(row,colname);
+    		tooltipCtr.updateTipText(tooltipInfo,txt)
+			tooltipCtr.update()
+    	}
+    	
+ 	}
+	
+	isCellEdit = function(col){
+		var key;
+		for(i,name in this.addEdit){//双击原地编辑
+        	var t = this.getHead(name);
+        	if(t and t.index == col){
+        		key = name;
+        		break ;
+        	}
+        }
+        return key;
+	}
+
+ 	createMenu = function( colNum ){
+		if( this.popmenu ){ this.popmenu.close();}
+		
+		this.popmenu = win.ui.popmenu( this );//创建弹出菜单
+		this.popmenu.add("复制",function(){
+			var name;
+			for(i,t in this.tabHeads){
+				if(t.index == colNum){
+					name = t.key;
+					break ;
+				}
+			}
+			var row = this.listview.selIndex;
+			win.clip.write(this.get(row,name));
+		})
+		if( this[["rbMenu"]] ) {
+			this.popmenu.add();
+			this.rbMenu();//加载自定义菜单
+		}
+	}
+	
+	setTextColor = function(row,col,color){
+		this.setColorState = true;
+		this.colors[row] := {};
+		this.colors[row][col] = color;
+	}
+	
+	setTextBkColor = function(row,col,color){
+		this.setColorState = true;
+		this.colorsBk[row] := {};
+		this.colorsBk[row][col] = color;
+	}
+
+	exportToExcel = function(tdao,filename,sheetname = "sheet2"){
+		var pathname,err;
+		try{
+			pathname = fsys.dlg.save("Execl文件(*.xls)|*.xls|Execl文件(*.xlsx)|*.xlsx||",,,this.hwnd,,filename)
+			if(!pathname){return ;} 
+			var excel = com.excel();
+			excel.alerts = false; //关闭所有操作提示	 	
+			var book = excel.WorkBooks.Add(); //创建工作簿
+  			for(i=1;excel.Sheets.Count;1){
+  				if(i>1) excel.ActiveWorkbook.Sheets(1).Delete();
+  			}
+			var sheet = excel.ActiveWorkbook.Sheets(1);
+			sheet.Select();	
+			sheet.Name = sheetname;
+			for(n=1;#tdao;1){
+				var key = tdao[n]
+				var t = this.getHead(key);
+				sheet.Cells(1,n).Value2 = t ? t.name : key; 
+			}
+			var index,tindex = this.getCheckedorSelected();
+			for(i,index in tindex){
+				for(n=1;#tdao;1){
+					var key = tdao[n];
+					var txt = "";
+					var t = this.getHead(key);
+					if(t) txt = this.get( index,key );
+					var num,len = tonumber(txt);
+            		txt = ( #txt == len and len <=8 ) ? txt : "'" + txt;
+					sheet.Cells(i+1, n).Value2 = txt;
+				}
+			};
+			excel.ActiveWorkBook.SaveAs(pathname);
+			excel.ActiveWorkbook.close();
+			excel.Quit();
+			book = null;
+			sheet = null;
+			excel = null;//释放所有对excel对象的引用
+			collectgarbage("collect");//内存回收,确保excel完全退出
+		}
+		catch(e){
+			err = e;
+		}
+		return pathname,err; 
+	}
+	
+	getListview = function(){
+		return this.listview; 
+	}
+	
+}
+
+namespace listviewex{
+	import win.imageList;
+	import win.ui;
+	import win.ui.menu;
+	import win.ui.tooltip;
+	import win.clip;
+	import mouse;
+	import com.excel;
+	import fsys.dlg;
+	import win.cur;
+	
+	hwndmouse = win.cur.load(32649/*_IDC_HAND*/)//鼠标形状变成手状句柄	
+	string = ..string;
+	table = ..table;
+	strcmp = ..string.cmp;
+	win = ..win;
+	
+	_metaProperty = ..util.metaProperty(
+		setRowHeight = {
+			_set = function( v=16 ){
+				var imageList = win.imageList(1, v);//行高
+				owner.listview.setImageList( imageList, 1/*_LVSIL_SMALL*/);
+			}
+		};
+	)
+}
+
+/**intellisense()
+win.ui.ctrl.listviewex = listview扩展控件
+?win.ui.ctrl.listviewex = !lvEx.
+!lvEx.set(.(列名,index, 附值内容) = 设置单元格内容
+!lvEx.get(.(index,列名) = 读取 key值或列名 单元格内容
+!lvEx.get(.(index,列名,true) = 读取 key值或列名 单元格内容,第三个参数为true,表示从DataTable原始数据包里读
+!lvEx.setCellBefore() = @.setCellBefore = function(value, key, row, col){\n	__\n	return value;\n}//设置单元格值之前加载函数,返回第一个参数
+!lvEx.setCellAfter() = @.setCellAfter = function(value, key, row, col){\n	__\n}//设置单元格值之后加载函数,无返回值
+!lvEx.insert(.(列名,长度) = 添加列
+!lvEx.addItem() = 添加一行,返回行号
+!lvEx.addHead(.(table对像) = 添加表头，参数table对像，返回:列名key值对应列数table对像，\n参数:如 tab = { {key = "rowId";name = "序号";len = 50}; }
+!lvEx.getHead(key) = 参数列key值,不区分大小写,返回table对像;注:执行addHead()函数后才能调用,
+!lvEx.getHead(,col) = 参数一为空,参数二为列序号数值,返回table对像;注:执行addHead()函数后才能调用,
+!lvEx.getRowTable(.(第几行) = 参数行数，返回整行table对像
+!lvEx.setRowTable(index, trow) = 附值整行,参数一:行号,参数二:行内容table对像
+!lvEx.setRowTableBefore() = @.setRowTableBefore = function(index, trow){\n	__\n	return trow;\n}//显示整行之前加载函数,返回trow
+!lvEx.setRowTableAfter() = @.setRowTableAfter = function(index, trow){\n	__\n}//显示整行之后加载函数,无返回值
+!lvEx.setTextColor(.(第几行,第几列,颜色值) = 设置单元格字体颜色,如gdi.RGB(255,0,255)
+!lvEx.setTextBkColor(.(第几行,第几列,颜色值) = 设置单元格背景颜色,如gdi.RGB(255,0,255)
+!lvEx.openonnotify(id,code,ptr) = 开启消息响应
+!lvEx.isSort = @.isSort = true;//是否开启排序功能，开启:true,关闭:false，默认已开启
+!lvEx.isMenu =  @.isMenu = true;//是否开启右建菜单，开启:true,关闭:false，默认已开启
+!lvEx.rbMenu = @.rbMenu = function(){\n	??.popmenu.add("菜单名",function(){\n		__\n	})\n	??.popmenu.add();\n}	//加载右键自定义菜单函数
+!lvEx.clearRow() = 清空所有行,字体颜色，背景色
+!lvEx.clearAll() = 清空所有行和列,字体颜色，背景色
+!lvEx.showData( tab, pageNum, pageSize ) = //显示数据列表，参数为sql查询返回的table,第几页,每页记录数
+!lvEx.showDataBefore() = @.showDataBefore = function(){\n	__\n}//显示列表数据之前加载
+!lvEx.showDataAfter() = @.showDataAfter = function(){\n	__\n}//显示列表数据之后加载
+!lvEx.exportToExcel(.(列名table对像,文件名字) = 导出选择中行，参数一:要导出的列名table,参数二可不填,
+!lvEx.addEdit = @.addEdit = {"__"}//设置原地编辑的列名key
+!lvEx.clickMouse = @.clickMouse = {"__"}//设置鼠标变成手状的列名key
+!lvEx.isCellEdit(col) = 参数:列数值，判断某一列是否有双击原地编辑
+!lvEx.tooltipKey = @.tooltipKey = {"__"}//设置单元格鼠标提示的列名key,设置后tooltipAll将失效
+!lvEx.tooltipAll = @.tooltipAll = true//开启全局单元格鼠标提示,默认已开启, 如果已经指定tooltipKey值，则失效
+!lvEx.addEditAfter() = @.addEditAfter = function(key, text, row){\n	__\n}//原地编辑后回调函数
+!lvEx.getCheckedorSelected() = 返回打勾或选中的行数,返回参数一:第一行数,返回参数二:行数table
+!lvEx.DataTable = 原始数据包
+!lvEx.PrimaryKey = 唯一值列名key值(用于排序时保持颜色不为)
+!lvEx.setRowHeight = @.setRowHeight = 16;//设置行高
+!lvEx.bgcolor1 =  @.bgcolor1 = 0xffffff;//设置奇数行背景色
+!lvEx.bgcolor2 =  @.bgcolor2 = 0xf1f4e9;//设置偶数行背景色
+!lvEx.listview = !listview.
+!lvEx.getListview() = 返回listview原始控件对像\n!listview.
+end intellisense**/

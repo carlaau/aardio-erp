@@ -1,0 +1,189 @@
+//processcmd 进程通信
+namespace carl
+
+processcmd = class {
+	ctor( guid, ... ){
+		var cmdline = _CMDLINE;
+		var owerPid = process.getId();
+		if( !guid ){
+			guid = win.guid.create();
+			guid = string.upper( tostring(guid) );
+		}
+		if( #cmdline ){
+			if(cmdline[1] == '{'# ) {
+				var r,t = call(eval,,cmdline);
+				if(!r) return null,"错误命令行参数: " ++ cmdline; 
+				guid = t.guid;
+				this.parentPid = t.parentPid;//父进程ID
+			}else {
+				return null,"不是有效参数"; 
+			}
+		}
+		var mutex,err = process.command.join(guid);//加入进程群组
+		if(!mutex) return null,err;
+
+		this.pids = thread.table("table" + guid);
+		this.guid = guid;
+		this.serverCmd = process.command( ... );//注册进程命令对象
+		
+		if( !..thread.get(guid) ) {
+			..thread.set(guid, true)
+			
+			this.serverCmd.receive = function( t ) { //接收命令
+				if( (t.toPid && t.toPid != owerPid) || (!t.toPid && !this.parentPid) )
+					return ;
+				if( type.table == type(t.msg) ){
+					if( this.parentPid ){
+						if( type(this.receiveChild) != type.function )
+							error("请先定义receiveChild消息处理函数",2);
+						return this.receiveChild(t.fromPid, table.unpackArgs(t.msg));
+					}else {
+						if( type(this.receiveParent) != type.function )
+							error("请先定义receiveParent消息处理函数",2);
+						return this.receiveParent(t.fromPid, table.unpackArgs(t.msg));
+					}
+				}
+			}
+			
+			this.serverCmd.quit = function( fromPid ) { 
+				if( fromPid == owerPid || (!fromPid && this.parentPid))
+					win.quitMessage(0);
+			}
+		}
+	};
+
+	sendto = function( toPid, types, ... ) {
+		var t = {};
+		t.fromPid = owerPid;
+		t.toPid = toPid;
+		t.msg = {...};
+		if( types == "send" ){
+			return process.command.send("receive",t);
+		}
+		elseif( types == "post" ){
+			return process.command.post("receive",t);
+		}
+		elseif( types == "quit" ){
+			process.command.post("quit",toPid);
+		}
+	}
+	
+	send = function( toPid, ...) {
+		return this.sendto( toPid, "send",...)
+	}
+	
+	post = function( toPid, ...) {
+		return this.sendto( toPid, "post", ... )
+	}
+	
+	create = function( exepath,sec=1000 ) {
+		if( _STUDIO_INVOKED )	error("请先发布,才能创建子进程");
+		exepath := ..io._exepath;
+		var t = {}
+		t.guid = guid;
+		t.parentPid = owerPid;
+		var pro,err = process(exepath, table.tostring(t));//命令参数 cmd
+		if(!pro) return null,err; 
+		this.pids.push(pro.id);
+		delay(sec)
+		return pro.id;
+	}
+		
+	quit = function( toPid ) {
+		this.sendto( toPid, "quit" );
+		this.removePid(toPid);
+	}
+	
+	kill = function( toPid ) {
+		try{
+			var p;
+			if( toPid ){
+				p = process(toPid);
+				if(p) p.terminate();
+			}else {
+				for( i,pid in this.pids.each() ){
+					p = process(toPid);
+					if(p) p.terminate();
+				}
+			}
+			this.removePid(toPid);
+		}
+	}
+	
+	waitClose = function(pid,f,...){
+		var bool;
+		while(true){
+			bool = false;
+			if(pid){
+				if( process.getPath(pid) ) bool = true;
+			}
+			else {
+				for( i,pid in this.pids.each() ){
+					if(process.getPath(pid)){
+						bool = true;
+						break ;
+					}
+				}
+			}
+			if(f){
+				if(f(...) === false) break ;
+			}
+			if(!bool) this.removePid(pid);
+			if(!bool || !delay(1000)) break ;
+		}
+	}
+	
+	removePid = function(pid){
+		for(i=1;this.pids.len();1){
+			if(!pid){
+				this.pids.remove();
+			}
+			elseif(pid == this.pids[i]) {
+				this.pids.remove(i);
+				break ;
+			}
+		}
+	}
+	
+}
+
+namespace processcmd{
+	import win;
+	import win.guid;
+	import process;
+	import process.command;
+	import thread.table;
+
+	table = ..table;
+	string = ..string;
+	delay = ..win[["ui"]] ?  ..win[["delay"]] : sleep;
+}
+
+/**intellisense()
+carl.processcmd = 进程通信库
+carl.processcmd() = 创建进程通信对像,第一次创建,参数:进程群组Guid,可忽略，创建成功后，可以用 对像.guid 读取
+carl.processcmd(guid) = 创建进程通信对像,参数:进程群组Guid不可忽略,可传入第一次创建的guid
+?carl.processcmd = !cmd.
+!cmd.create() = 创建本身做为子进程,成功返回子进程ID,失败返回null,错误信息;
+!cmd.create(.(子进程路径)) = 创建子进程,参数:子进程路径,成功返回子进程ID,失败返回:null,错误信息;
+!cmd.send(.(进程ID,消息内容)) = 阻塞调用跨进程命令,参数一:可指定进程ID,忽略则向所有子进程发消息,\n可获取处理该命令的回调函数返回值,\n用于父进程与子进程之间通信,或子进程与子进程之间通信
+!cmd.post(.(进程ID,消息内容)) = 非阻塞调用跨进程命令,参数一:可指定进程ID,忽略则向所有子进程发消息,\n无返回值,\n用于父进程与子进程之间通信,或子进程与子进程之间通信
+!cmd.receiveParent = @.receiveParent = function( fromPid,... ) {
+	/*如果当前进程是父进程,此函数用于接收来至其他进程发的消息,回调参数:发送方进程ID,不定个数参数*/
+	__/*进程里第一次最先定义此函数的地方有效,其他地方无效*/
+}
+!cmd.receiveChild = @.receiveChild = function( fromPid,... ) {
+	/*如果当前进程是子进程,此函数用于接收来至其他进程发的消息,回调参数:发送方进程ID,不定个数参数*/
+	__/*进程里第一次最先定义此函数的地方有效,其他地方无效*/
+}
+!cmd.quit(.(进程ID)) = 退出一个子进程,发送win.quitMessage()退出消息
+!cmd.quit() = 退出所有子进程,发送win.quitMessage()退出消息
+!cmd.kill(.(进程ID)) = 强制杀死子进程
+!cmd.kill() = 强制杀死所有子进程
+!cmd.serverCmd = 进程命令对象
+!cmd.parentPid = 父进程ID,如果值为null,说明当前进程是父进程
+!cmd.guid = 进程群组Guid
+!cmd.pids = 所有子进程ID表table对像
+!cmd.waitClose() = 等待所有子进程退出
+!cmd.waitClose(pid) = 等待指定子进程退出,参数子进程ID
+end intellisense**/

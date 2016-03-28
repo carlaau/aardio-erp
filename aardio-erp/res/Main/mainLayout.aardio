@@ -1,0 +1,63 @@
+import win.ui;
+/*DSG{{*/
+mainForm = win.form(text="AAuto工程";right=600;bottom=400;border="none")
+mainForm.add(
+tab={cls="tab";left=2;top=105;right=600;bottom=380;db=1;dl=1;dr=1;dt=1;edge=1;z=1}
+)
+/*}}*/
+
+import web.layoutEx; 
+import web.layout.behavior.main.systemMenu;
+import web.layout.behavior.main.systemMenuClick;
+import web.layout.behavior.main.click;
+
+mainForm.text = config.__appName;
+var wbLayout = web.layoutEx( mainForm,"/layout/main.html" );
+
+var RoadName = ...;
+var status,load,serverTime,dtsec,tnow;
+mainForm.tab.hide = true;
+
+mainForm.addtimer( 1000,
+	function(hwnd,msg,id,tick){
+		if( dtsec === null ){
+			serverTime = ws.getServerTime();
+			tnow = time();
+			if( serverTime ){
+				serverTime = time(serverTime,"%Y-%m-%d %H:%M:%S");
+				dtsec = serverTime.diffsecond(tnow);
+			}
+		}else {
+			tnow = time();
+			tnow.addsecond(dtsec)
+		}
+		wbLayout.getEle("status5").innerText = "服务器时间: " ++ tostring(tnow);
+	} 
+)
+
+mainForm.addtimer( 
+	60000,
+	function(hwnd,msg,id,tick){
+		var ok,err = ws.System.checkToken();
+		if(!ok) win.quitMessage(0)
+	} 
+)
+
+load = function(){//加载数据库冷数据
+	loadcode("\res\Main\menu.aardio")(wbLayout);
+}
+
+Ver = carl.update.getVersion();//版本号
+wbLayout.getEle("status1").innerText = "用户: " + tabLoginInfo["NickName"] + "(" + tabLoginInfo["LoginName"] + ")";
+wbLayout.getEle("status2").innerText = "版本: " + Ver;
+wbLayout.getEle("status3").innerText = "线路: " + (RoadName:"");
+wbLayout.getEle("status4").innerHTML = "版权: " + config.__appCompanyName;
+wbLayout.getEle("info1").innerText = config.__info1;
+wbLayout.getEle("info2").innerText = config.__info2;
+
+var x,y,cx,cy = mainForm.getPos();
+mainForm.setPos(x-210,y-115,cx+420,cy+230);
+mainForm.hitmax();
+mainForm.show()
+load();
+win.loopMessage(); 

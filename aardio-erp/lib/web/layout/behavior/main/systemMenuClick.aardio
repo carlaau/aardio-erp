@@ -1,0 +1,11 @@
+﻿
+namespace web.layout.behavior.main.systemMenuClick
+
+//显示隐藏我的桌面
+onMouseUp = function( ltTarget,ltOwner,x,y,ltMouseParams ) {
+	if(..string.find(ltOwner.outerHTML,"我的桌面")){
+		..mainForm.tab.hide = !..mainForm.tab.hide;
+	}else {
+		..mainFormTabCtrl.addTabForm(ltOwner.path, ltOwner.innerText, ltOwner.id);//打开选项卡
+	}
+}

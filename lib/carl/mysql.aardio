@@ -1,0 +1,122 @@
+//mysql 数据库
+namespace carl
+
+mysql = class {
+	ctor( server,database,uid,pwd ){
+		var conn,err;
+		try{
+			conn,err = mysql.client(
+				server = server;
+				database = database;
+				uid = uid;
+				pwd = pwd;
+			);
+		}
+		catch(e){
+			err = e;
+		}
+		if(!conn){
+			return null,err; 
+		}
+		this.conn = conn;
+	};
+	
+	exec = function(sql,...){//执行SQL或存储过程,无返回值
+		var ok,err;
+		var tp = {...}
+		try{
+			if( conn )
+				ok,err = conn.exec(sql, table.unpackArgs(tp));
+		}
+		catch(e){
+			err = e;
+		}
+		return ok,err;
+	}
+
+	getTable = function(sql,...){//执行SQL,返回table记录集
+		var t,result,err;
+		var tp = {...}
+		try{
+			if( conn ){
+				result,err = conn.query(sql, table.unpackArgs(tp));
+				if(!result)	return;
+				var fields = {};
+				var f = result.fetchFieldTypes()
+				for(i=1;result.numFields();1){
+					fields[i] = f[i].name
+				}
+				t = { fields = fields  };
+				var row = result.fetchObject()
+				while (row) {
+					table.push(t, row);
+					row = result.fetchObject()
+				}
+			}
+		}
+		catch(e){
+			err = e;
+		}
+		if( type(t) != type.table ) t = null;
+		return t,err;
+	}
+	
+	transaction = function( tsql ){//事务执行,table
+		conn.beginTrans();
+		var errnum = 0;
+		var ok,err;
+		for(i,sql in tsql){
+			ok,err = conn.exec(sql);
+			if(!ok){
+				errnum++
+				break ;
+			}
+		}
+		if(!errnum){
+			conn.commitTrans();//提交事务
+		}else {
+			conn.rollbackTrans();//回滚事务
+		}
+		return ok,err
+	}
+	
+	storedProcedures = function(name, ...){
+		var t = {...};
+		var tab = {};
+		for(k,v in t){
+			if(type.string == type(v)){
+				table.push(tab,"'" ++ v ++ "'");
+			}
+			else{
+				table.push(tab, v);
+			}			
+		}
+		var sql = "CALL " ++ name ++ "(" ++ string.join(tab, ",") ++ ")";
+		return this.getTable(sql); 
+	}
+	
+	close = function(){ 
+		if( this.conn )
+			this.conn.close();
+	}
+	
+}
+
+namespace mysql{
+	import mysql.client;
+	
+	table = ..table;
+	string = ..string;
+}
+
+/**intellisense()
+carl.mysql = mysql数据库
+carl.mysql( server,database,uid,pwd ) = 创建mysql数据库连接
+carl.mysql() = !mysql.
+!mysql.conn = 数据库连接句柄
+!mysql.getTable(sql) = 返回查询结果集table对像\n每个元素代表一行,每行由N个键值对列组成,键fields为列名结果集
+!mysql.exec(sql) = 执行sql,成功返回ture,失败返回null,err
+!mysql.transaction(tab) = 事务执行多个sql语句,参数table对像,成功返回ture,失败返回null,err,\n说明:全部执行成功,或全部失败\n表需InnoDB类型
+!mysql.storedProcedures(name) = 执行存储过程,参数1:存储过程名称,参数2以后,是传存储过程函数参数
+!mysql.close() = 关闭连接
+end intellisense**/

@@ -1,0 +1,13 @@
+﻿
+namespace web.layout.behavior.main.click
+
+onMouseUp = {
+
+	default = function( ltTarget,ltOwner,x,y,ltMouseParams ) {
+	
+	}
+	
+	status4 = function( ltTarget,ltOwner,x,y,ltMouseParams ){
+		..process.execute(..config.__website)
+	}
+}

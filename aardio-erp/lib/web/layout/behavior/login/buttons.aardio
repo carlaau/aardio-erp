@@ -1,0 +1,12 @@
+﻿
+namespace web.layout.behavior.login.buttons
+
+onButtonClick = {
+	login = function (ltTarget,ltOwner,reason,behaviorParams) {
+		var winform = ltOwner.getForm();
+		ltOwner.state.disabled = true;
+		winform.btnLogin();
+		ltOwner.state.disabled = false;
+	}
+}
+

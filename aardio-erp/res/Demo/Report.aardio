@@ -1,0 +1,179 @@
+import win.ui;
+/*DSG{{*/
+var winform = win.form(text="loading...";right=600;bottom=400;parent=...)
+winform.add(
+cboReportType={cls="combobox";left=534;top=28;right=589;bottom=48;dl=1;dt=1;edge=1;items={"日报";"周报";"月报"};mode="dropdownlist";tabstop=1;z=8};
+cboShop={cls="comboboxex";text="请选择门店";left=3;top=27;right=212;bottom=51;autosize=1;center=1;dl=1;dt=1;edge=1;tabstop=1;transparent=1;z=1};
+page={cls="page";text="整页控件";left=0;top=54;right=600;bottom=400;autosize=1;center=1;clip=1;db=1;dl=1;dr=1;dt=1;edge=1;transparent=1;z=6};
+static={cls="static";text="统计起始订单日期";left=218;top=32;right=323;bottom=48;dl=1;dt=1;transparent=1;z=7};
+static7={cls="static";text="-";left=422;top=31;right=435;bottom=45;dl=1;dt=1;transparent=1;z=4};
+toolbar={cls="toolbar";text="工具条";left=0;top=-2;right=600;bottom=25;center=1;dl=1;dr=1;dt=1;edge=1;transparent=1;z=2};
+txtOrderDate1={cls="datetimepick";left=321;top=28;right=416;bottom=49;dl=1;dt=1;edge=1;z=5};
+txtOrderDate2={cls="datetimepick";left=435;top=28;right=530;bottom=49;dl=1;dt=1;edge=1;z=3}
+)
+/*}}*/
+
+winform.listview = winform.page.listview();
+winform.lvEx = winform.page.listviewEx();
+winform.listview.onnotify = function(id,code,ptr){
+    return winform.lvEx.openonnotify(id,code,ptr)//默认菜单,排序
+}
+winform.page.isPage = false;
+winform.page.table = {
+	{key = "rowId";name = "序号";len = 50};
+	{key = "dateSpan";name = "报表类型(点我排序)";len = 150};
+	{key = "ShopType";name = "平台";len = 80};
+	{key = "ShopName";name = "门店";len = 150};
+	{key = "OrderCount";name = "订单总数(全部)";len = 120};
+	{key = "OrderSuccesCount";name = "订单总数(已付款)";len = 120};
+	{key = "TotalAmount";name = "总销售额";len = 80};	
+	{key = "BuyOrderCount";name = "已拍单数";len = 80};
+	{key = "BuyTotalAmount";name = "已拍销售额";len = 80};
+	{key = "notBuyOrderCount";name = "未拍单数";len = 80};
+	{key = "notBuyTotalAmount";name = "未拍销售额";len = 80};
+	{key = "TotalProfit";name = "已拍毛利润";len = 80};
+	{key = "ProfitRate";name = "毛利润率";len = 80};
+	{key = "EveryPrice";name = "客单价";len = 80};
+	{key = "startDate";name = "开始日期";len = 130};
+	{key = "endDate";name = "结束日期";len = 130};
+}
+
+winform.page.where = function(){
+	var t = winform.cboShop.getChecked("ShopId");
+	if(!#t){
+		t = winform.cboShop.getKey("ShopId");//所有门店
+	}
+	if(!#t){
+		winform.msgbox("您没有门店权限，请联系部门管理员！","提示")
+		return false;
+	}
+	var shopIds = string.join(t,",");
+	var types = winform.cboReportType.selText;
+	var reportType;
+	if( types == "日报"){
+		reportType = "2"
+	}
+	elseif( types == "周报"){
+		reportType = "0"
+	}
+	elseif( types == "月报"){
+		reportType = "1"
+	}
+	return reportType,shopIds; 
+}
+
+winform.page.getTable = function(){
+	var reportType,shopIds = winform.page.where();
+	if(!reportType) return false; 
+	var tab,err = {};
+	var date1 = winform.txtOrderDate1.time;
+	var date2 = winform.txtOrderDate2.time;
+	if(reportType == "0"){//周报
+		date1.addday(1-date1.dayofweek)
+		date2.addday(7-date2.dayofweek)
+		dt = date2.diffday(date1);
+		dt = dt>=7 ? (tonumber(dt/7,10)) : 0;//相差周数
+	}
+	else if(reportType == "1") {//月报
+		dt = date2.diffmonth(date1);
+	}
+	else {//日报
+		dt = date2.diffday(date1);
+	}	
+	date1.format="%Y-%m-%d";
+	for(i=0;dt;1){
+		var t,err = ws.Order.sp_WeeklyMonthShopReport(tostring(date1),reportType,shopIds);
+		table.push(tab,table.unpack(t))
+		if(reportType == "0"){
+			date1.addday(7);
+		}
+		else if(reportType == "1") {
+			date1.addmonth(1);
+		}
+		else {
+			date1.addday(1);
+		}
+		win.delay(100)
+	}
+	return tab,err; 
+}
+
+var rep = function(str,paten){
+	var num = string.match(str,"(\d+)" ++ paten);
+	if(num){
+		num = tonumber(num,10)
+		num = string.format("%02i", num)
+		str = string.replace(str,"\d+(" + paten + ")",num ++ "\1")
+	}
+	return str; 
+}
+
+winform.lvEx.setCellBefore = function(value, key, row, col){
+	if( key == "ProfitRate"){
+		value = tostring(value) ++ "%";
+	}
+	elseif(key == "dateSpan"){
+		var t = {"日";"周";"月"}
+		for(k,v in t){
+			value = rep(value,v)
+		}
+	}
+	if(string.find(value,"汇总")){
+		for( i=1;winform.listview.columnCount;1 ){
+			winform.lvEx.setTextColor(row,i,gdi.RGB(255,0,0))//红色
+		}
+	}
+	return value;
+}
+
+winform.lvEx.showDataBefore = function(){
+	var tempate = carl.report.template(winform.lvEx.DataTable);//报表
+	tempate.row = {"OrderCount";"OrderSuccesCount";"TotalAmount";"BuyOrderCount";"BuyTotalAmount";"notBuyOrderCount";"notBuyTotalAmount";"TotalProfit"};
+	tempate.rowCmd = "sum";
+	tempate.col = {//列
+		ProfitRate="math.round([TotalProfit]*100/([BuyTotalAmount]:1), 2)";//毛利率
+		EveryPrice="math.round([BuyTotalAmount]/([BuyOrderCount]:1), 2)";//客单价
+	};
+	tempate.rowDefault = {"rowId";"startDate";"endDate"};
+	tempate.rowKey = "dateSpan";
+	tempate.rowKeyValue = "汇总 [dateSpan]：";
+	tempate.run();
+}
+
+winform.btnDao = function(){
+	if(not winform.page.start()){return false; }
+	var tdao = {}
+	for(k,t in winform.page.table){
+		if(k>1) table.push(tdao,t.key)	
+	}	
+	var tnow = time();
+	tnow.format="%Y%m%d %H%M%S";
+	var filename = tostring(tnow)
+	var ok,err = winform.lvEx.exportToExcel(tdao, filename);//文件名称
+	if(ok){
+		pathname = ok;
+		if(winform.msgboxTest("导出成功。是否打开？","提示")){
+			process.execute(pathname);
+		}
+	}elseif(err) {
+		winform.msgbox("导出失败," + err,"提示")
+	}
+}
+
+winform.btnSearch = function(){
+	winform.page.search();
+}
+
+winform.load = function(){
+	winform.cboShop.insertItem({{text="全部";table.clone(tabSystemTreeShop)}});
+	winform.cboReportType.selIndex = 3;
+	winform.txtOrderDate1.time = time().addday(1-time().day)
+	winform.page.load();
+}
+
+winform.toolbar.btnSearch(winform.btnSearch, "查看报表")
+winform.toolbar.btnOpenFolder(winform.btnDao, "导出")
+
+winform.show() 
+//win.loopMessage();
+return winform;

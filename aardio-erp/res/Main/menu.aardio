@@ -1,0 +1,63 @@
+﻿
+var wbLayout = ...;
+
+mainForm.wndproc = function(hwnd,message,wParam,lParam){
+	select( message ) { 
+		case 0x10/*_WM_CLOSE*/{
+			if(win.msgboxTest("确定退出程序?","提示")){
+				win.quitMessage(0);
+			}else {
+				return false; 
+			}
+		}
+	}
+}
+
+mainFormTabCtrl = carl.ctrl.tab(mainForm.tab);
+
+mainFormTabCtrl.wndproc = function(hwnd,message,wParam,lParam){
+	return mainFormTabCtrl.exWndproc(hwnd,message,wParam,lParam); 
+}
+
+//重载权限
+reStartMainLimit = function(){
+	tabSystemFormMenu,tabSystemTreeMenu = {},{};//全局权限表
+	var limitMenuIds;
+	if(tabLoginInfo["LoginName"] != "admin"){//超级管理员无需分配,
+		var tab,err = ws.System.SystemUserToMenu.getUserMenuIds(tabLoginInfo["SystemUserId"]);
+		if(!tab){
+			mainForm.msgboxErr(err,"错误")
+			return false;
+		}
+		limitMenuIds = #tab ? string.join(tab,",") : "0";
+	}
+	var t1,t2 = ws.System.SystemMenu.getFormAndTreeMenuTable(limitMenuIds,addTabForm);//返回 窗口菜单,树形菜单 table对像
+	if(t1 and t2){
+		tabSystemFormMenu,tabSystemTreeMenu = table.clone(t1),table.clone(t2);
+	}else {
+		var err = t2:"";
+		mainForm.msgboxErr(err,"错误")
+		return false; 
+	}
+	/*
+	如有其他权限,请在这里扩展,比如增加门店权限,数据权限,部门权限,按钮权限
+	tabSystemTreeShop,tabSystemLimitShop = {},{};
+	tabSystemTreeDepartment,tabSystemLimitDepartment = {},{};
+	*/
+	if(table.count(tabSystemFormMenu) == 0){
+		if(tabLoginInfo["LoginName"] == "admin"){
+			mainFormTabCtrl.addTabForm("\res\System\Menu.aardio", "菜单管理")
+		}else {
+			mainForm.msgboxErr("您无权限，请联系部门管理员分配菜单权限！","错误")
+		}
+	}
+	wbLayout.getEle("systemmenu").innerHTML = conn.showSystemMenuLayout(tabSystemTreeMenu);//HTMLayout菜单
+	return true; 
+}
+
+if(tabLoginInfo["LoginName"] != "admin"){
+	var ele = wbLayout.getEle("openConsole");
+	if(ele) ele.style.display = "none";
+}
+
+reStartMainLimit();//加载权限

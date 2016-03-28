@@ -1,0 +1,168 @@
+//pagectrl 分页控件
+namespace carl.ctrl.pagectrl{}
+
+import util.metaProperty;
+namespace win.ui.ctrl; 
+class pagectrl { 
+	ctor(parent,tParam){
+/*DSG{{*/
+this = ..win.form(text="aardio form";right=706;bottom=22;border="none";exmode="none";mode="child";parent=parent;tParam=tParam)
+this.add(
+btnPageEnd={cls="static";text="尾页";left=583;top=6;right=613;bottom=21;color=16711680;dl=1;dt=1;notify=1;transparent=1;z=13};
+btnPageNext={cls="static";text="下一页";left=534;top=6;right=573;bottom=21;color=16711680;dl=1;dt=1;notify=1;transparent=1;z=14};
+btnPagePrev={cls="static";text="上一页";left=484;top=6;right=524;bottom=21;color=16711680;dl=1;dt=1;notify=1;transparent=1;z=11};
+btnPageStart={cls="static";text="首页";left=447;top=6;right=474;bottom=21;color=16711680;dl=1;dt=1;notify=1;transparent=1;z=10};
+btnRefresh={cls="static";text="刷新";left=410;top=6;right=437;bottom=21;color=16711680;dl=1;dt=1;notify=1;transparent=1;z=18};
+btnReverse={cls="static";text="反选";left=46;top=6;right=75;bottom=21;color=16711680;dl=1;dt=1;notify=1;transparent=1;z=17};
+btnSearch={cls="static";text="跳转";left=677;top=6;right=705;bottom=21;color=16711680;dl=1;dt=1;notify=1;transparent=1;z=12};
+btnSelect={cls="static";text="全选";left=8;top=6;right=37;bottom=21;color=16711680;dl=1;dt=1;notify=1;transparent=1;z=16};
+static={cls="static";text="/";left=114;top=6;right=129;bottom=21;dl=1;dt=1;transparent=1;z=1};
+static2={cls="static";text="共";left=172;top=6;right=191;bottom=21;dl=1;dt=1;transparent=1;z=4};
+static3={cls="static";text="条记录";left=262;top=6;right=305;bottom=21;dl=1;dt=1;transparent=1;z=6};
+static4={cls="static";text="每页";left=307;top=6;right=335;bottom=21;dl=1;dt=1;transparent=1;z=7};
+static5={cls="static";text="条";left=389;top=6;right=407;bottom=21;dl=1;dt=1;transparent=1;z=9};
+txtNowPage={cls="static";text="1";left=75;top=6;right=109;bottom=21;align="right";color=255;dl=1;dt=1;transparent=1;z=2};
+txtPageNum={cls="edit";text="1";left=622;top=2;right=669;bottom=22;autohscroll=false;autovscroll=false;dl=1;dt=1;edge=1;hidesel=1;num=1;z=15};
+txtPageSize={cls="edit";text="50";left=335;top=2;right=382;bottom=22;autohscroll=false;autovscroll=false;dl=1;dt=1;edge=1;hidesel=1;num=1;z=8};
+txtTotalCount={cls="static";text="1000000";left=193;top=6;right=253;bottom=19;align="center";color=255;dl=1;dt=1;transparent=1;z=5};
+txtTotalPage={cls="static";text="1";left=126;top=6;right=166;bottom=21;color=255;dl=1;dt=1;transparent=1;z=3}
+)
+/*}}*/
+
+		..table.mix(this@, _metaProperty);
+	}
+	
+	onCreate = function(){//创建窗口后触发此函数 
+		for(name,ctrl in this.eachControl() ){
+			if( ..string.startWith(name,"btn") ){
+				ctrl.wndproc = function(hwnd,message,wParam,lParam){
+					if(message = 0x200/*_WM_MOUSEMOVE*/ or message = 0x202/*_WM_LBUTTONUP*/)
+						win.cur.setCur(hwndmouse);//鼠标形状变成手状
+				}
+				ctrl.oncommand = function(id,event){
+					if( event ) return ; 
+					ctrl.disabled = true;
+					this.btnCommand( name )
+					ctrl.disabled = false;
+				}
+			}
+		}
+	}
+	
+	btnCommand = function( name ){
+		var nowpage = tonumber(this.txtNowPage.text);
+		var totalpage = tonumber(this.txtTotalPage.text);
+		var page = this.txtPageNum.text;
+		select(name) {
+			case "btnSelect" {//全选
+				if( !this.listview ){
+					this.msgboxErr("请先绑定listview控件","错误");
+					return ; 
+				}
+				for(i=1;this.listview.count;1) this.listview.setChecked(i);
+				if(this.selected) this.selected();
+			}
+			case "btnReverse" {//反选
+				if( !this.listview ) return;
+				for(i=1;this.listview.count;1) this.listview.setChecked(i,!this.listview.getChecked(i))
+				if(this.selected) this.selected();
+			}
+			case "btnRefresh" {//刷新
+				this.showFunc();
+			}
+			case "btnPageStart" {//首页
+				this.txtNowPage.text = 1;
+				this.showFunc();
+			}
+			case "btnPagePrev" {//上一页
+				if( nowpage > 1 ){
+					this.txtNowPage.text = nowpage - 1;
+					this.showFunc();
+				}
+			}
+			case "btnPageNext" {//下一页
+				if( nowpage < totalpage ){
+					this.txtNowPage.text = nowpage + 1;
+					this.showFunc();
+				}
+			}
+			case "btnPageEnd" {//尾页
+				this.txtNowPage.text = totalpage;
+				this.showFunc();
+			}
+			case "btnSearch" {//跳转
+				if( #page ){
+					this.txtNowPage.text = page;
+					this.showFunc();
+				}
+			}
+		}
+	}
+	
+	listview = function(listview){
+		this.listview = listview;
+	}
+
+	showFunc = function(){
+		if( !this["showPage"] ){
+			this.msgboxErr("请选绑定showPage显示函数","错误")
+			return ; 
+		}
+		this.showPage();
+		var page = tonumber(this.txtPageSize.text) : 30;
+		this.txtPageSize.text = page;
+		var totalCount = tonumber(this.txtTotalCount.text) : 0;
+		this.txtTotalPage.text = ..math.ceil( totalCount/page );//总页数
+	}
+
+	load = function(){
+		this.btnPageStart.oncommand()
+	}
+}
+
+namespace pagectrl {
+	import win.cur;
+	hwndmouse = win.cur.load(32649/*_IDC_HAND*/)//鼠标形状变成手状句柄
+	
+	_metaProperty = ..util.metaProperty(
+	
+		pageSize = {//每页记录数
+			_get = function(){
+				return owner.txtPageSize.text; 
+			}
+			_set = function( v ){
+				owner.txtPageSize.text = v;
+			}
+		};
+		
+		nowPage = {//当前页数
+			_get = function(){ 
+				return owner.txtNowPage.text; 
+			}
+			_set = function( v ){
+				owner.txtNowPage.text = v;
+			}
+		};
+		
+		totalCount = {//总记录
+			_get = function(){ 
+				return owner.txtTotalCount.text; 
+			}
+			_set = function( v ){
+				owner.txtTotalCount.text = v;
+			}
+		};	
+	)
+}
+
+/*intellisense()
+win.ui.ctrl.pagectrl = 分页控件
+win.ui.ctrl.pagectrl() = 分页控件
+?win.ui.ctrl.pagectrl = !pagectrl.
+!pagectrl.pageSize = 获取或设置 每页显示记录数
+!pagectrl.nowPage = 获取或设置 当前页数
+!pagectrl.totalCount = 获取或设置 总记录
+!pagectrl.load() = 加载第一页
+!pagectrl.selected() = @.selected = function(){\n	__\n}//点全选或反选后，回调函数
+!pagectrl.listview(.(listview控件) = 绑定listview控件
+end intellisense*/

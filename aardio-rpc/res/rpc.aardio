@@ -1,0 +1,38 @@
+
+import carl.rpc.server;
+
+var f,err = loadcode("\config.aardio");
+if(!f) return response.write(err);
+f();
+
+f,err = loadcode("\sqlhelper.aardio");
+if(!f) return response.write(err);
+f();
+
+f,err = loadcode("\functions.aardio");
+if(!f) return response.write(err);
+f();
+response.write(request)
+
+var server = carl.rpc.server(config.rsaPrivateKey);
+var t = { server.receive() };//接收
+var funcName,err = t[1],t[2];
+var func = functions[funcName];
+if( !func ){
+	if(funcName){
+		response.write("'" + funcName + "' function not exist!");
+	}elseif( err ){
+		response.write(err);
+	}else{
+		response.write("welcome to aardio rpc!")
+	}
+	return;
+}
+table.remove(t);
+try{
+	var jsontext = server.reply( func(table.unpackArgs(t)) );//执行自定义函数 并回复函数返回值
+	response.write( jsontext );
+	jsontext = null;
+}catch(e){
+	response.write(funcName ++ '函数出错.\r\n' ++ (e:""));
+}

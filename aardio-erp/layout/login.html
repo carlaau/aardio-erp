@@ -1,0 +1,62 @@
+﻿<html>
+<head>
+  <link rel="stylesheet" href="styles/login.css" />
+</head> 
+<body> 
+  <div id="MainFrame">
+    <!--标题栏-->
+    <div command="window-caption" >
+      <!--标题栏按钮-->
+      <div .caption-buttons>  
+		<div id="window-set">
+			<menu .popup>
+			  <li #website>访问主页</li>
+			  <li #update>在线升级</li>
+			  <li #exit>退出</li>
+			</menu>
+		</div>
+		<div class="titlebox"><a command="window-min"></a><a command="window-close"></a></div>
+      </div> 
+	  <div id="mainTitle"></div>
+    </div>
+	
+    <div id="panel">
+      <!--Avatar-->
+      <div id="avatar-picture" />
+      <div class="form">
+        <input class="text" name="txtUserName" novalue="工号/登录名"/>
+        <input class="text" name="txtPwd" novalue="密码" type="password"/>
+        <div class="checkboxes">
+		
+          <div class="cbreSart-checkbox">
+            <input id="cbreSart" type="checkbox" />
+            <label for="cbreSart" >开机运行</label>
+          </div>
+		 <!--
+          <div class="auto-checkbox">
+            <input id="auto" type="checkbox"/>
+            <label for="auto">记住密码</label>
+          </div>
+		  -->
+		  <div class="select-road">
+            <div class="roadName">线路: <span id="roadName"></span></div>
+			<div class="setroad">u
+				<menu id="roadMenu" .popup>
+				</menu>
+			</div>
+          </div>
+        </div>
+        <button id="login">登&nbsp;&nbsp;&nbsp;&nbsp;录</button>
+      </div>
+      <div id="sidebar">
+       <!-- <a id="register" /> <a id="forgetpwd" />-->
+      </div>
+      <div class="bottombar">
+        <a id="switch-multi" />
+        <a id="qrcode" />
+      </div>
+    </div>
+  </div>
+  <span id="ahtmlServerUrl" style="display:none"></span>
+</body>
+</html>

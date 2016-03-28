@@ -1,0 +1,349 @@
+@const BORDER_COLOR: #245E82; 
+@const CLIENT_COLOR: #EFF7FC;
+
+body {
+  margin: 0; 
+  top: 10px;
+  border: 0px solid @BORDER_COLOR; 
+  background: @CLIENT_COLOR;
+  foreground-image: url( images/qq/afternoon.jpg );
+  foreground-repeat: no-repeat;
+  opacity: 0;
+  transition: opacity(linear,1s);
+  opacity: 1;
+  font-family: '宋体';
+} 
+
+#MainFrame {
+  behavior:windowCommand;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  transition: opacity(linear,1.5s,1s);
+  opacity: 1;
+}
+
+#panel {
+  margin-top: 2px;
+  width: 100%;
+  flow: horizontal;
+}
+
+#avatar-picture {
+  width: 80px;
+  height: 81px;
+  margin-left: 40px;
+  margin-bottom: 10px;
+  foreground-image: url( images/qq/login_head_bkg.png);
+  background-image: url( images/qq/noavatar_middle.gif );
+  background-size: 78px 78px;
+  border-radius: 4px;
+  background-repeat: no-repeat;
+  background-position: 1px 1px;
+}
+
+.form {
+  width: 194px;
+}
+
+.form .text {
+  margin-left: 10px;
+  width: 180px;
+  height: 30px;
+  padding: 0;
+  padding-left: 7px;
+  padding-right: 7px;
+  font-size: 13px;
+}
+
+input[name=txtUserName] {
+  margin-top: 2px;
+  position: relative;
+  z-index: 10;
+  background: url( images/qq/edit_frame_normal_reversed.png ) no-repeat;
+}
+
+input[name=txtUserName]:hover {
+  background: url( images/qq/edit_frame_hover_reversed.png ) no-repeat;
+}
+
+input[name=txtPwd] {
+  position: relative;
+  background: url( images/qq/edit_frame_normal.png ) no-repeat;
+  background-position: 0 -1px;
+  behavior:~ "login.password";
+}
+
+input[name=txtPwd]:hover {
+  z-index: 10;
+  background: url( images/qq/edit_frame_hover.png ) no-repeat;
+  background-position: 0 0;
+}
+
+.form input:empty {
+  color: gray;
+  font-size: 12px;
+}
+
+.checkboxes {
+  margin-top: 5px;
+  margin-left: 8px;
+  height: 17px;
+  flow: horizontal;
+}
+
+input[type=checkbox] {
+  foreground: url( images/qq/checkbox_normal.png );
+  width: 17px;
+  height: 17px;
+  transition: none;
+  outline: none;
+}
+
+input[type=checkbox]:hover {
+  foreground: url( images/qq/checkbox_hightlight.png );
+}
+
+input[type=checkbox]:active {
+  foreground: url( images/qq/checkbox_pushed.png );
+}
+
+input[type=checkbox]:checked {
+  foreground: url( images/qq/checkbox_tick_normal.png );
+}
+
+input[type=checkbox]:checked:hover {
+  foreground: url( images/qq/checkbox_tick_highlight.png );
+}
+
+input[type=checkbox]:checked:active {
+  foreground: url( images/qq/checkbox_tick_pushed.png );
+}
+
+.cbreSart-checkbox {
+  width: 40%;
+}
+
+label {
+  color: graytext;
+  font-size: 12px;
+  margin-left: -2px;
+}
+
+.auto-checkbox {
+  width: 100%%;
+  text-align: right;
+}
+
+#auto {
+  margin-left: 2px;
+  click! : self:checked == true ? $1(#cbreSart):checked = true;
+}
+
+.select-road {
+  width: 100%%;
+  text-align: right;
+  flow: horizontal;
+  margin-top: 3px;
+}
+.select-road .roadName {
+  font-size: 12px;
+  color: graytext;
+}
+.select-road .setroad {
+  color:rgb(9,163,220);//#fff;
+  width:max-intrinsic; 
+  height:14px;
+  font-family:"Marlett";/*该字体显示按钮符号*/  
+  font-size:14px;
+  padding:1px;
+}
+.select-road .setroad:hover {
+  background:#6ebccf;
+}
+.select-road .setroad:owns-popup /*菜单已弹出*/
+{ 
+    background-color: #FF0000;
+    color: #FFFFFF;
+}
+.select-road .setroad {
+  behavior:popup-menu;
+}
+.select-road .setroad > menu{
+    behavior:~ "login.selectRoad";   
+}
+
+#login {
+  font-size: 12px;
+  background: url( images/qq/button_login_normal.png );
+  width: 194px;
+  height: 30px;
+  padding: 0;
+  color: white;
+  margin-left: 8px;
+  margin-top: 12px;
+  transition: blend;
+  behavior:~ "login.buttons";
+}
+
+#login:hover {
+  background: url( images/qq/button_login_hover.png );
+}
+
+#login:active {
+  background: url( images/qq/button_login_down.png );
+}
+
+#sidebar { margin-top: 11px; margin-left: 8px; }
+#sidebar a{
+  width: 48px;
+  height: 11px;
+  display: block;
+  cursor: pointer;
+}
+
+#register {
+  background: url( images/qq/zhuce.png );
+}
+
+#register:hover {
+  background: url( images/qq/zhuce_hover.png );
+}
+
+#register:active {
+  background: url( images/qq/zhuce_press.png );
+}
+
+
+#forgetpwd {
+  margin-top: 16px;
+  background: url(images/qq/mima.png );
+}
+
+#forgetpwd:hover {
+  background: url( images/qq/mima_hover.png );
+}
+
+#forgetpwd:active {
+  background: url( images/qq/mima_press.png );
+}
+
+.bottombar {
+  position: static;
+}
+
+#switch-multi, #qrcode {
+  display: block;
+  width: 24px;
+  height: 24px;
+  opacity: 0;
+  transition: opacity(linear,1.5s,1s);
+  opacity: 1;
+}
+
+#switch-multi {
+  position: fixed;
+  left: 6px;
+  bottom: 6px;
+  background: url( images/qq/switch_single_normal.png );
+}
+
+#switch-multi:hover {
+  background: url( images/qq/switch_single_hover.png );
+  transition: blend;
+}
+
+#switch-multi:active {
+  background: url( images/qq/switch_single_down.png );
+}
+
+#qrcode {
+  position: fixed;
+  right: 6px;
+  bottom: 6px;
+  background: url( images/qq/corner_right_normal_breath.png );
+}
+
+#qrcode:hover {
+  background: url( images/qq/corner_right_hover.png );
+  transition: blend;
+}
+
+#qrcode:active {
+  background: url( images/qq/corner_right_normal_down.png );
+}
+div[command=window-caption] {
+  behavior:windowCommand;
+  width: 100%;
+  height:190px;
+}
+
+.caption-buttons{
+  behavior:windowCommand;
+  position: absolute;
+  right: 0.5px;
+  top: 0;
+  height: 27px; 
+  flow: horizontal;
+}
+
+.caption-buttons .titlebox {
+  margin-right:0px; 
+  height: 27px;
+  width: 60px;
+}
+
+.caption-buttons .titlebox a{  
+  float: left;
+  height: 27px;
+  width: 30px;
+  transition: blend;
+}
+#mainTitle {
+	color: white;
+	font-size: 24px;
+	text-align: center;
+	margin-top:60px
+}
+#window-set {
+  margin-right:0px; 
+  height: 27px;
+  width: 30px;
+  transition: blend;
+  foreground: url( images/qq/btn_set_normal.png);
+}
+#window-set:hover {
+  foreground: url( images/qq/btn_set_hover.png);
+}
+#window-set:active {
+  foreground: url( images/qq/btn_set_press.png);
+}
+#window-set {
+  behavior:popup-menu;
+}
+#window-set > menu{
+    behavior:~ "titleMenu";   
+}
+
+[command=window-min] {
+  foreground: url( images/qq/btn_mini_normal.png);
+}
+[command=window-min]:hover {
+  foreground: url( images/qq/btn_mini_highlight.png);
+}
+[command=window-min]:active {
+  foreground: url( images/qq/btn_mini_down.png);
+}
+
+[command=window-close]  {
+  background: url( images/qq/btn_close_normal.png);
+}
+[command=window-close]:hover  {
+  background: url( images/qq/btn_close_highlight.png);
+}
+[command=window-close]:active  {
+  background: url( images/qq/btn_close_down.png);
+}

@@ -1,0 +1,208 @@
+//mssql 数据库
+namespace carl
+
+mssql = class {
+	ctor( server,database,uid,pwd ){
+		var conn,err;
+		try{
+			 conn,err = sqlServer( server = server;database = database;uid = uid;pwd = pwd; )
+		}
+		catch(e){
+			err = e;
+		}
+		if( conn ){
+			this.conn = conn;
+		}else {
+			return null,err; 
+		}
+	};
+	
+	regetTable = function(sql,...){//重写原库getTable函数
+		var rs,err = this.conn.openRecordSet(sql,,,...);
+		if(!rs) error(err,2);
+		
+		var fields = {};
+		for( i=1;rs.Fields.Count ){
+			fields[i] = rs.Fields(i-1).Name; 
+		}
+ 
+        var trim = string.trimright;
+        var result = { fields = fields  };  
+        var v;
+        while(!rs.eof){
+        	var row = {};  
+        	for(i,name in fields){ 
+        		v = rs( name ).value;
+        		if( type( v ) == "string" ) v = trim(v);
+        		elseif(..time.istime(v)){//增加时间判断
+        			v.format="%Y-%m-%d %H:%M:%S";
+        			v = tostring(v);
+        		}
+        		row[name] = v;
+        	}
+        	
+        	table.push( result,row );
+        	rs.movenext();
+        }
+		
+		return result;
+	}
+	
+	exec = function(sql, check=false){//执行SQL或存储过程,无返回值
+		//if(check && fsys.codepage.isTextUtf8(sql))
+			//sql = string.toUnicode(sql,65001);
+		var ok,err;
+		try{
+			if( this.conn )
+				ok,err = this.conn.exec(sql);
+		}
+		catch(e){
+			err = e;
+		}
+		return ok,err;
+	}
+	
+	getTable = function(sql, check=false){//执行SQL,返回table记录集
+		//if(check && fsys.codepage.isTextUtf8(sql))
+			//sql = string.toUnicode(sql,65001);
+		var t,err;
+		try{
+			if( this.conn )
+				t,err = this.regetTable(sql); 
+		}
+		catch(e){
+			err = e;
+		}
+		if( type(t) != type.table ) t = null;
+		return t,err;
+	}
+	
+	transaction = function( tsql, check=false){//事务执行
+		var sql1=/*BEGIN TRANSACTION
+		DECLARE @errorSun INT
+		SET @errorSun=0 */
+
+		var sql2=/*IF @errorSun<>0 
+		BEGIN 
+		ROLLBACK TRANSACTION
+		END 
+		ELSE 
+		BEGIN 
+		COMMIT TRANSACTION
+		END*/
+
+		var sql3 = "SET @errorSun=@errorSun+@@ERROR";//累计是否有
+
+		var t = {};
+		table.push(t, sql1, '\r\n');
+		for(i=1;#tsql;1){
+			table.push(t, tsql[i], '\r\n', sql3, '\r\n');
+		}
+		table.push(t, sql2)
+		var sql = string.join(t);
+		//if(check && fsys.codepage.isTextUtf8(sql))
+			//sql = string.toUnicode(sql,65001);
+		return this.exec(sql);
+	}
+	
+	storedProcedures = function(name, ...){//执行存储过程,存储过程名称,参数(只能字符型)
+		var t = {...};
+		var re,err;
+		try{
+			this.spname(name);
+			for(i=1;#t;1){
+				this.spinput("@t" + tostring(i), t[i]);//输入参数	
+			}
+			re,err = this.spexec();//执行,返回table
+		}
+		catch(e){
+			err = e;
+		}
+		return re,err;
+	}
+	
+	spname = function(name){//存储过程
+		this.conn.cmd = com.CreateObject("ADODB.Command") 
+		this.conn.cmd.ActiveConnection = this.conn.connection;
+		this.conn.cmd.CommandType = 4;
+		this.conn.cmd.prepared = true;
+		this.conn.cmd.CommandText = name;//存储过程函数名称
+	}
+	
+	getRsTable = function(rs){
+		var fields = {};
+		for( i=1;rs.Fields.Count ){
+			fields[i] = rs.Fields(i-1).Name : i; 
+		}
+    	var trim = string.trimright;
+    	var result = { fields = fields  };
+    	var v;
+    	while(!rs.eof){
+        	var row = {};
+        	for(i,name in fields){ 
+        		if(type.number == type(name)){
+        			v = rs( name-1 ).value;
+        		}else {
+        			v = rs( name ).value;
+        		}
+        		if( type( v ) == "string" ) v = trim(v);
+        		elseif(..time.istime(v)){//增加时间判断
+        			v.format="%Y-%m-%d %H:%M:%S";
+        			v = tostring(v);
+        		}
+        		name = tostring(name);
+        		row[name] = v;
+        	}
+        	table.push( result,row );
+        	rs.movenext();
+    	}
+    	return result; 
+	}
+	
+	//存储过程传入参数,需按顺序
+	spinput = function(keyname,value,types = 0xC8/*_adVarChar*/){
+		var size;
+		if( types == 0xC8/*_adVarChar*/){
+			value = tostring(value);
+			size = #value+2;
+		}
+		this.conn.cmd.Parameters.Append(this.conn.cmd.CreateParameter(keyname,types,1/*_adParamInput*/,size,value));
+	}
+
+	//执行存储过程有返回记录集
+	spexec = function(){
+		var rs = this.conn.cmd.Execute();
+		while(rs && !rs.State){
+			rs = rs.NextRecordset();
+		}
+		if(!rs) return ;
+		return this.getRsTable(rs); 
+	}
+	
+	close = function(){
+		if( this.conn )
+			this.conn.close();
+	}
+	
+}
+
+namespace mssql{
+	import sqlServer;
+	import com;
+	import fsys.codepage;
+	
+	table = ..table;
+	string = ..string;
+}
+
+/**intellisense()
+carl.mssql = mssql数据库
+carl.mssql( server,database,uid,pwd ) = 创建mssql数据库连接
+carl.mssql() = !mssql.
+!mssql.conn = 数据库连接句柄
+!mssql.getTable(sql,false) = 第二个参数:是否自动检查UTF-8,返回查询结果集table对像\n每个元素代表一行,每行由N个键值对列组成,键fields为列名结果集
+!mssql.exec(sql,false) = 执行sql,第二个参数:是否自动检查UTF-8,成功返回ture,失败返回null,err
+!mssql.transaction(tab) = 事务执行多个sql语句,参数table对像,第二个参数:是否自动检查UTF-8,成功返回ture,失败返回null,err,说明:全部执行成功,或全部失败
+!mssql.storedProcedures(name) = 执行存储过程,参数1:存储过程名称,参数2以后,是传存储过程函数参数(参数只能是字符型)
+!mssql.close() = 关闭连接
+end intellisense**/

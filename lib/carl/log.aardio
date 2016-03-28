@@ -1,0 +1,40 @@
+//log 日志库
+namespace carl.log
+
+import fsys;
+
+writelog = function(str,filename,add = true,date = true){
+	var dir = "/log/";
+	if( !..io.exist(dir) ){
+		fsys.createDir("/log/")
+	}
+	str = tostring(str);
+	if(date){
+		var tdate = ..time();
+		tdate.format="%Y%m%d";
+		filename = tostring(tdate) + "_" + filename;
+	}
+	var t = ..time();
+	t.format="%Y-%m-%d %H:%M:%S";
+	str = tostring(t) + " " +  str + '\r\n'; 
+	..string.save(dir + filename, str, add);	
+}
+
+readlog = function(filename,date = true){
+	var str = "";
+	if(date){
+		var tdate = ..time();
+		tdate.format="%Y%m%d";
+		filename = tostring(tdate) + "_" + filename;
+	}
+	filename = "/log/" + filename;
+	if( ..io.exist(filename) ){
+		var file = ..io.open(filename,"r");
+		var size = tonumber(file.size64());
+		size = size > 10000 ? 10000 : size;
+		file.seek("end")
+		str = file.readback(size)
+		file.close()
+	}
+	return str; 	
+}

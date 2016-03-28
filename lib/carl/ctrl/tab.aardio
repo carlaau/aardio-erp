@@ -1,0 +1,145 @@
+﻿//tab 选项卡扩展
+namespace carl.ctrl
+
+tab = class {
+	ctor( tabctrl ){
+		var mainForm = ..win.form.getForm(tabctrl.hwnd)
+		var x,y;
+		var menuTab = win.ui.popmenu(mainForm);//选项卡右键菜单
+		menuTab.add(
+			'关闭当前标签页',
+			function(id){ 
+				this.closeTabForm()
+			}
+		)
+		menuTab.add(
+			'关闭其他标签页',
+			function(id){ 
+				this.closeTabForm(,"other")
+			}
+		)
+		menuTab.add()
+		menuTab.add(
+			'关闭右侧标签页',
+			function(id){ 
+				this.closeTabForm(,"right")
+			}
+		)
+		menuTab.add(
+			'关闭左侧标签页',
+			function(id){ 
+				this.closeTabForm(,"left")
+			}
+		)
+		menuTab.add()
+		menuTab.add(
+			'关闭全部标签页',
+			function(id){ 
+				this.closeTabForm(,"all")
+			}
+		)
+		this = tabctrl;
+		this.tabForm = {};
+		this.isOpenOnlyOne = true;//一个页面只能打开一次
+	};
+	
+	exWndproc = function(hwnd,message,wParam,lParam){
+		if ( message == 0x207/*_WM_MBUTTONDOWN*/ or message = 0x203/*_WM_LBUTTONDBLCLK*/) {	//鼠标中键点击选项卡或双击,关闭窗口
+			x,y = ::LOWORD(lParam), ::HIWORD(lParam); 
+			this.closeTabForm();
+		}
+		else if (message = 0x204/*_WM_RBUTTONDOWN*/){	//鼠标右键点击选项卡,弹出菜单
+			x,y = ::LOWORD(lParam), ::HIWORD(lParam);
+			var rc = ::RECT();
+			rc.left,rc.top = x,y;
+			::ClientToScreen(this.hwnd,rc);
+			menuTab.popup(rc.left,rc.top,true);//弹出菜单
+		}
+	}
+	
+	addTabForm = function( file, title, menuId, ...){
+		if(!#file) return ;
+		this.hide = false;
+		if(this.isOpenOnlyOne){
+			var index = table.find(this.tabForm,file);
+			if( index ){
+				this.selIndex = index;
+				return ; 
+			} 
+		}
+		var form,wb = this.loadForm(file);
+		if(!form) return null,wb;
+		form.ResName = menuId : file;//列顺序用
+		var sel = #this.items;
+		this.selIndex = sel;
+		if( title )	this.setItemText(sel,title);
+		table.push(this.tabForm,file)
+		if( form[["loadButton"]] ) form.loadButton(menuId);//页面按钮权限
+		if( form[["load"]] ) form.load(...);//打开时加载
+		
+		for(name,ctrl in form.eachControl() ){
+			if(string.find(ctrl.cls:"","<edit>|<select>|<combobox>|<datetimepick>")){
+				var ctrlfunc = ctrl.cls == "select" ? ctrl.combobox : ctrl;
+				ctrlfunc.wndproc = function(hwnd,message,wParam,lParam){
+					if( (message == 135 || message == 0x100/*_WM_KEYDOWN*/) && wParam == 0xD/*_VK_ENTER*/){ //按回车搜索
+						if(form.btnEnter) form.btnEnter()
+					}
+				}
+			}
+		}
+		return form,wb; 
+	}
+
+	closeTabForm = function(index,cmd){
+		index := this.hitTest(x,y);
+		if(!index) return ;
+		var bool = false;
+		select(cmd) {
+			case "all" {
+				this.removeAll();
+				this.tabForm = {};
+			}
+			case "other" {
+				for(i=#this.items;1;-1){
+					if(i != index ){
+						this.remove(i);
+						table.remove(this.tabForm, i);
+						bool = true;
+					}
+				}
+			}
+			case "right" {
+				for(i=#this.items;index+1;-1){
+					this.remove(i);
+					table.remove(this.tabForm, i);
+					bool = true;
+				}
+			}
+			case "left"{
+				for(i=index-1;1;-1){
+					this.remove(i);
+					table.remove(this.tabForm, i);
+					bool = true;
+				}
+			}
+			else {
+				if(index != this.selIndex) bool = true;
+				this.remove( index )
+				table.remove(this.tabForm, index);
+			}
+		}
+		if(bool) this._onChange();
+		if(!#this.tabForm) this.hide = true;
+	}
+}
+
+namespace tab{
+	import win.ui.menu;
+	
+	string = ..string;
+	table = ..table;
+}
+
+/**intellisense()
+
+end intellisense**/

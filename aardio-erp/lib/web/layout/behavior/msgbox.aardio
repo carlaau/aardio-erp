@@ -1,0 +1,21 @@
+﻿
+namespace web.layout.behavior.msgbox
+
+onButtonClick = {
+
+	btnOk = function (ltTarget,ltOwner,reason,behaviorParams) {
+		var winform = ltOwner.getForm();
+		winform.msg = 1;
+		winform.close();
+	}
+	btnCancel = function (ltTarget,ltOwner,reason,behaviorParams) {
+		var winform = ltOwner.getForm();
+		winform.msg = 0;
+		winform.close();
+	}
+	
+}
+
+
+
+

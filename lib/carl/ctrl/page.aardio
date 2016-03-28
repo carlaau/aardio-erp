@@ -1,0 +1,270 @@
+//page 整页控件
+//由listview扩展控件和pagectrl分页控件组成
+namespace carl.ctrl.page{}
+
+import win.cur;
+import carl.sql;
+import util.metaProperty;
+import process;
+
+namespace win.ui.ctrl; 
+class page { 
+	ctor(parent,tParam){
+		
+/*DSG{{*/
+this = win.form(text="aardio form";right=900;bottom=400;border="none";exmode="none";mode="child";parent=parent;tParam=tParam)
+this.add(
+btnSort={cls="static";text="设置列名";left=713;top=380;right=767;bottom=396;color=16711680;db=1;dl=1;notify=1;transparent=1;z=3};
+lvex={cls="listviewex";text="listview扩展控件";left=0;top=0;right=900;bottom=375;db=1;dl=1;dr=1;dt=1;edge=1;transparent=1;z=2};
+pagectrl={cls="pagectrl";text="分页控件";left=0;top=375;right=706;bottom=400;db=1;dl=1;edge=1;transparent=1;z=1};
+txtMsg={cls="static";left=775;top=380;right=899;bottom=396;bgcolor=15780518;color=32768;db=1;dl=1;dr=1;transparent=1;z=4}
+)
+/*}}*/
+
+		this.pagectrl.listview(this.lvex.listview);
+
+		this.pagectrl.showPage = function(){//分页绑定函数
+			if( this.ShowPageStatus ){return ; }
+			this.ShowPageStatus = true;
+			try{
+				this.executeSql(this.pagectrl.nowPage, this.pagectrl.pageSize);
+			}
+			catch(e){
+				..io.print(e)
+			}			
+			this.ShowPageStatus = null;
+		}
+		
+		this.btnSort.oncommand = function(id,event){
+			var form = this.loadForm($"~/lib/carl/ctrl/pageSort.aardio");
+			form.doModal(this.parent)
+		}
+		
+		this.btnSort.wndproc = function(hwnd,message,wParam,lParam){
+			if(message = 0x200/*_WM_MOUSEMOVE*/ or message = 0x202/*_WM_LBUTTONUP*/)
+				..win.cur.setCur(hwndmouse);//鼠标形状变成手状
+		}
+		
+		this.pagectrl.selected = function(){
+			if(this.selected) this.selected();
+		}
+		this.isPage = true;//是否分页
+		this.sortFilePath = "/config/sortTable.table";
+		..table.mix(this@, _metaProperty);
+	}
+
+	listview = function(){
+		return this.lvex.listview; 
+	}
+	
+	listviewEx = function(){
+		return this.lvex; 
+	}
+
+	executeSql = function(currentPage, pageSize){
+		this.lvex.clearRow();
+		var tab,err;
+		if(this.getTable){
+			tab,err = this.getTable(currentPage, pageSize);
+			if(tab === false) return false;
+		}else {
+			if( ! this.sql ){
+				this.msgboxErr("请设置page控件SQL语句","提示")
+				return ; 
+			}
+			var where = "";
+			if( type(this.where) == "function" ){//自定义查询语句
+				where = this.where();
+			}
+			if(where === false) return false;
+			where = #where ? "where " + where : "";
+			var sql;
+			if(this.isPage){
+				var drive = this.drive : ..config[["__drive"]] : "mysql";
+				sql = (drive == "mysql") ?
+				..carl.sql.my.getPageSql(this.sql + " " + where, currentPage, pageSize, this.orderby) :
+				..carl.sql.ms.getPageSql(this.sql + " " + where, currentPage, pageSize, this.orderby);	
+			}else {
+				sql = this.sql ++ " " ++ where;
+				if(#this.orderby) sql += " order by " ++ this.orderby;
+			}
+			this.lastSql = sql;
+			tab,err = this.webService.getTable(sql)
+		}
+		if( !tab ){
+			this.msgbox(err,"提示")
+			return ;
+		}
+		if( #tab ){
+			if( this.isPage ){
+				this.pagectrl.totalCount = tab[1]["rowCount"];//总记录
+			}else {
+				this.pagectrl.pageSize = #tab
+				this.pagectrl.totalCount = #tab;
+			}
+			if(!this.table){
+				var tHead = {}
+				for(i=1;#tab["fields"];1) table.push(tHead,{key = tab["fields"][i];name = tab["fields"][i];len = 80});
+				this.lvex.addHead(tHead)
+			}
+			this.lvex.showData(tab, currentPage, pageSize)
+		}else {
+			this.pagectrl.totalCount = "0";
+		}
+	}
+	
+	loadSort = function(){//如果有本地列名排序表，重新排序列名
+		var tabSortAll = {};
+		var code = string.load(this.sortFilePath);
+		if(code){
+			tabSortAll = eval(code);
+		}
+		var tabSort = tabSortAll[[this.ResName]] : {};
+		var tablist,tab = {},{};
+		var tabFiles = table.clone(this.table);
+		for(i,t in tabFiles ){
+			if(t.key == "rowId"){
+				table.push(tablist,t)
+			}else {
+				table.push(tab,t)
+			}
+		}
+		for(i=1;#tabSort;1){
+			var row = tabSort[i];
+			if(type.table != type(row)) break ;
+			var name = row["n"];
+			for(k,t in tab){
+				if(t.name == name){
+					t["s"] = row["s"];
+					t.len = t["s"] ? t.len : 0;
+					table.push(tablist,t)
+					break ;
+				}
+			}
+		}
+		for(k,t in tab){
+			var bool = false;
+			for(i=1;#tabSort;1){
+				var row = tabSort[i];
+				if(type.table != type(row)) break ;
+				if(row.n == t.name) bool = true;
+			}
+			if(!bool) table.push(tablist,t)
+		}
+		return tablist,tabSortAll; 
+	}	
+	
+	loadHead = function(resName){
+		this.ResName = (this.ResName : resName : this.parent.ResName : "name");
+		var tab = this.loadSort();//重新排序列名
+		if(#tab) this.lvex.addHead(tab);//加载列名
+	}
+	
+	load = function(resName){
+		this.loadHead(resName)
+		this.search();//显示首页
+	}
+	
+	search = function(){
+		this.pagectrl.load();//显示首页
+		..win.delay(100);
+	}
+	
+	start = function(msg = true, checked = true, selected = true){
+		this.parent.index = null;
+		this.parent.tindex = null;
+		this.index = null;
+		this.tindex = null;
+		var index,t = this.lvex.getCheckedorSelected(checked,selected)
+		if( !index && msg){
+			this.msgbox("请先打勾行或者选中行","提示")
+			return false; 
+		}
+		this.parent.index = index;
+		this.parent.tindex = t;
+		this.index = index;
+		this.tindex = t;
+		return true; 
+	}
+
+	exportToExecl = function(filename){
+		if(not this.start()){return false; }
+		var tdao = {}
+		for(k,t in this.table) if(t.len > 0) table.push(tdao,t.key);
+		var tnow = ..time();
+		tnow.format = "%Y%m%d-%H%M%S";
+		filename := tostring(tnow)
+		var ok,err = this.lvex.exportToExcel(tdao, filename);//文件名称
+		if(ok){
+			pathname = ok;
+			if(this.msgboxTest("导出成功。是否打开？","提示")){
+				..process.execute(pathname);
+			}
+		}elseif(err) {
+			this.msgbox("导出失败," + err,"提示")
+		}
+	}
+	
+	refresh = function(){
+		this.pagectrl.showFunc()
+	}
+	
+}
+
+namespace page {
+	string = ..string;
+	table = ..table;
+	math = ..math;
+	win = ..win;
+	
+	hwndmouse = ..win.cur.load(32649/*_IDC_HAND*/)//鼠标形状变成手状句柄
+	
+	_metaProperty = ..util.metaProperty(
+	
+		setPageSize = {
+			_set = function( v ){
+				owner.pagectrl.pageSize = v;
+			}
+		};
+		
+		getPageSize = {
+			_get = function(){
+				return owner.pagectrl.pageSize;
+			}
+		};
+		
+		setBottomText = {
+			_set = function( v ){
+				owner.txtMsg.text = v;
+			}
+		};	
+	)
+}
+
+/*intellisense()
+!page.setPageSize = @.setPageSize = 50;//设置每页显示记录数,值可忽略,默认50
+!page.getPageSize = 获取每页显示记录数
+!page.load() = 加载列名并搜索第一页
+!page.loadHead() = 加载列名
+!page.search() = 搜索第一页
+!page.webService = 设置数据库访问层的类库,如 ws.System
+!page.sql = 设置主SQL语句
+!page.orderby = 设置SQL排序,如 id,name desc
+!page.where() = @.where = function(){\n	var where = "1=1 ";\n	__\n	return where; \n}//自定义函数返回SQL中where部分,不包括where本身
+!page.table = @.table = {\n	{key = "rowId";name = "序号";len = 50};\n	__\n	{key = "Id";name = "主键ID";len = 0};\n}//设置列名表table对像
+!page.start() = 初始化操作，返回是否打勾或选中行，同时把选中附值于,winform.page.index和winform.page.tindex
+!page.index = 选中的行
+!page.tindex = 选中的行集合
+!page.selected() = @.selected = function(){\n	__\n}//点全选或反选后，回调函数
+!page.getTable() = @.getTable = function(){\n	var tab,err = {};\n	__\n	return tab,err; \n}//定义SQL返回数据集,回调函数,同时webService,sql,orderby,where四个函数将失效
+!page.isPage = @.isPage = true;//是否分页
+!page.drive = @.drive = "mysql";//数据库类型,mysql或mssql,默认mysql
+!page.lastSql = 最后一次执行的SQL语句
+!page.setBottomText = @.setBottomText = "";//设置页面底部信息
+!page.exportToExecl() = 导出到Execl,参数:文件名,可忽略
+!page.refresh() = 刷新当前页
+!page.listview() = 返回原始listview控件对像\n!listview.
+!page.listviewEx() = 返回listviewex扩展控件对像\n!lvEx.
+?win.ui.ctrl.page = !page.
+win.ui.ctrl.page() = 整页控件\n!page.
+end intellisense*/

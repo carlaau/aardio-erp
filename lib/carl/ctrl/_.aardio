@@ -1,0 +1,15 @@
+﻿//自定义控件库
+namespace carl.ctrl{}
+
+import carl.ctrl.listviewex;
+import carl.ctrl.pagectrl;//分页控件
+import carl.ctrl.page;
+import carl.ctrl.toolbar;
+import carl.ctrl.treeviewex;
+import carl.ctrl.comboboxex;
+import carl.ctrl.tab;
+import carl.ctrl.select;
+
+/*intellisense()
+carl.ctrl = 自定义控件库
+end intellisense*/

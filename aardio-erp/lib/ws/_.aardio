@@ -1,0 +1,49 @@
+﻿//数据库访问层
+namespace ws
+
+import ws.System;
+import thread.manage;
+
+//RSA公钥，留空不加密
+var rsaPublicKey = /*
+BgIAAACkAABSU0ExAAQAAAEAAQDve7UdKeI35NfLa8JkE4YQsxwKNCeE/OwAsqwd
+iVv/g4I0Lay5DupUhM8j8DHPePg6TFiDQ2APSaSRx5hiA/lrDlfX2UBltJV+Hzl8
+lxhj/wChQl8+7A9I6IvcyjqCzwZMRllVj5cOUFouxJJV/PqemQf5n+vQJ90V2B6F
+kCnjxg==
+*/
+
+/*intellisense(ws)*/
+
+getServerTime = function(){//返回服务器时间	
+	return ws.System.getServerTime(); 
+}
+
+ahtmlServer = function(serverUrl,funcName, ...){
+
+	var func = function(serverUrl, rsaPublicKey, funcName, ...){
+		import carl.rpc.client;
+		var ahtml = carl.rpc.client(serverUrl, rsaPublicKey);
+		ahtml.code = "aardio";
+		var t = { ahtml[funcName](...) };
+		ahtml.close();
+		return true,t;
+	}
+	
+	var path = "/config/loginForm.table";
+	var ahtmlServerUrl = ..thread.get("ahtmlServerUrl");
+	if(!#ahtmlServerUrl && ..io.exist(path)){
+		var t = eval(..string.load(path))
+		ahtmlServerUrl = t[["ahtmlServerUrl"]];
+	}
+	if(!#ahtmlServerUrl) return null,"未配置ahtmlServerUrl";
+
+	var bool,t;
+	manage = thread.manage(1);
+	manage.create(func, ahtmlServerUrl ++ serverUrl, rsaPublicKey, funcName, ...).onEnd = function(...){
+		bool,t = ...;
+	}
+	manage.waitClose()
+	return bool,t; 
+}
+
+/*end intellisense*/
