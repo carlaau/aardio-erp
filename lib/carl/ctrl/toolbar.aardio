@@ -1,41 +1,21 @@
 //toolbar 工具条控件
 namespace carl.ctrl.toolbar{}
 
+import win.imageList;
+import win.ui.toolbar;
 import win.ui.ctrl.metaProperty;
+
 namespace win.ui.ctrl; 
 class toolbar { 
 	ctor(parent,tParam){
-/*DSG{{*/
-this = win.form(text="aardio form";right=995;bottom=23;border="none";exmode="none";mode="child";parent=parent;tParam=tParam)
-this.add()
-/*}}*/
-
-		this.toolbar = win.ui.toolbar(this);
+		this = ..win.form(text="aardio form";right=995;bottom=23;border="none";exmode="none";mode="child";parent=parent;tParam=tParam)
+		this.add();
+		this.toolbar = ..win.ui.toolbar(this);
 		this.toolbar.create( style = 0x1000/*_TBSTYLE_LIST*/); // 创建工具条
 		this.toolbar.showLabel = true; //在按钮上显示文字
-		this.toolbar.imageList = win.imageList( 16, 16 ).add($"~/lib/carl/ctrl/.res/toolbar.gif",0xFFFFFF/*透明色*/) ; 
-		this.toolbar.add(); 
+		this.toolbar.imageList = ..win.imageList( 16, 16 ).add($"~/lib/carl/ctrl/.res/toolbar.gif",0xFFFFFF/*透明色*/) ; 
+		this.toolbar.add();
 	}
-
-	add = function (text, proc, iBitmap = 0,id) { 
-    	if(!id)
-    		id = this.toolbar.parent.registCommand(proc);
-    	else {
-    		if(proc) this.toolbar.parent.registCommand(proc,id);
-    	} 
-    	
-		var tbb = win.ui.toolbar.TBBUTTON(this.toolbar);
-		tbb.iBitmap = iBitmap - 1;
-		tbb.idCommand = id;
-		tbb.fsState = 0x4/*_TBSTATE_ENABLED*/;
-		tbb.fsStyle = text == null ? 0x1/*_TBSTYLE_SEP*/ : 0x0/*_TBSTYLE_BUTTON*/ | 0x10/*_TBSTYLE_AUTOSIZE*/;
-		tbb.iString = text or "";
-		..table.push(this.toolbar.buttons,tbb );
-
-		::SendMessageByStruct(this.toolbar.hwnd, 0x444/*_TB_ADDBUTTONSW*/, 1, tbb);  
-		::SendMessageInt(this.toolbar.hwnd, 0x421/*_TB_AUTOSIZE*/, 0, 0);  
-		return tbb;
-	} 
 	
 	buttons = function(){
 		return this.toolbar.buttons; 
@@ -72,10 +52,8 @@ this.add()
 			var r,r1 = func( ..table.unpackArgs(t) );
 			if( r1 !== false) btnEvent.disabled = false;
 		}
-		var tbb = this.add( name, funcom, num);
-		this.add();
-		//var tbb = this.toolbar.add(name, funcom, num);
-		//this.toolbar.add()
+		var tbb = this.toolbar.add(name, funcom, num);
+		this.toolbar.add()
 		return tbb;
 	}
 	
@@ -136,11 +114,6 @@ this.add()
 	btnLeft = function(func, name = "向左", ...){
 		return this.createButton( name, func, 19, ...);
 	}
-}
-
-namespace toolbar {
-	import win.ui.toolbar;
-	win = ..win;
 }
 
 /*intellisense()

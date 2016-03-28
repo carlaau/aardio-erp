@@ -1,18 +1,22 @@
 //listviewex扩展控件
 namespace carl.ctrl.listviewex{}
 
+import mouse;
+import com.excel;
+import fsys.dlg;
+import win.clip;
+import win.ui.menu;
+import win.ui.tooltip;
+import win.cur;
+import win.imageList;
 import win.ui.ctrl.metaProperty;
+
 namespace win.ui.ctrl; 
 
 class listviewex { 
 	ctor(parent,tParam){
-	
-/*DSG{{*/
-this = win.form(text="aardio form";right=400;bottom=300;border="none";exmode="none";mode="child";parent=parent;tParam=tParam)
-this.add(
-listview={cls="listview";left=0;top=0;right=400;bottom=300;asel=false;bgcolor=16777215;db=1;dl=1;dr=1;dt=1;edge=1;fullRow=1;gridLines=1;hscroll=1;vscroll=1;z=1}
-)
-/*}}*/
+		this = ..win.form(text="aardio form";right=400;bottom=300;border="none";exmode="none";mode="child";parent=parent;tParam=tParam)
+		this.add(listview={cls="listview";left=0;top=0;right=400;bottom=300;asel=false;bgcolor=16777215;db=1;dl=1;dr=1;dt=1;edge=1;fullRow=1;gridLines=1;hscroll=1;vscroll=1;z=1});
 
 		this.isSort = true;	//开启排序
 		this.isMenu = true;	//开启右键菜单
@@ -26,17 +30,17 @@ listview={cls="listview";left=0;top=0;right=400;bottom=300;asel=false;bgcolor=16
 		this.listview.setExtended(0x4/*_LVS_EX_CHECKBOXES*/)
 		this.listview.setExtended(0x10000/*_LVS_EX_DOUBLEBUFFER*/)//启用双缓冲,避免拖动滚动条时闪烁
 		
-		var imageList = win.imageList(1, 22);//行高
+		var imageList = ..win.imageList(1, 22);//行高
 		this.listview.setImageList( imageList, 1/*_LVSIL_SMALL*/);
 		
-		var iml = win.imageList(16, 15);
+		var iml = ..win.imageList(16, 15);
 		iml.add('GIF\56\57a \0\15\0\x80\0\0\x80\x80\x80\xff\0\xff\33\xf9\4\0\0\0\0\0\44\0\0\0\0 \0\15\0\0\2\31\x8c\x8f\xa9\xcb\xed\15\xa3\x9c\xb4N\xf0\x80\xde\56k\xbfA\\\xd7\x84 \x97Y\xea\xca\xb6\xee\11\xc7F\1\0;', 0xff00ff);
 		var hc = ::SendMessage(this.listview.hwnd, 0x101F/*_LVM_GETHEADER*/);// 取header
 		::SendMessage(hc, 0x1200 + 8/*_HDM_SETIMAGELIST*/, topointer(0), iml.handle);
 		
 		this.tooltipKey = {};//提示
 		this.tooltipAll = true;//所有鼠标提示
-		var tooltipCtr = win.ui.tooltip( this );//在窗口上创建tooltip控件 
+		var tooltipCtr = ..win.ui.tooltip( this );//在窗口上创建tooltip控件 
 		var tooltipInfo = tooltipCtr.addTool(this.listview,,0x10/*_TTF_SUBCLASS*/ )
 		var lastTooltip;
 
@@ -45,7 +49,7 @@ listview={cls="listview";left=0;top=0;right=400;bottom=300;asel=false;bgcolor=16
 
     // 获取列图片
 	getColImage = function (nCol) {
-    	var col = win.ui.ctrl.listview.LVCOLUMN();
+    	var col = ..win.ui.ctrl.listview.LVCOLUMN();
     	col.mask = 0x1/*_LVCF_FMT*/ | 0x10/*_LVCF_IMAGE*/;
     	col = rget(2, ::SendMessageByStruct(this.listview.hwnd, 0x1019/*_LVM_GETCOLUMN*/, nCol - 1, col));
     	if (col.fmt & 0x800/*_LVCFMT_IMAGE*/){
@@ -59,7 +63,7 @@ listview={cls="listview";left=0;top=0;right=400;bottom=300;asel=false;bgcolor=16
     // 设置列图片
     setColImage = function (nCol, iImage = -1,fmt) {
         fmt := 0
-        var col = win.ui.ctrl.listview.LVCOLUMN();
+        var col = ..win.ui.ctrl.listview.LVCOLUMN();
         col.mask = 0x1/*_LVCF_FMT*/;
         if (iImage == -1) {
             col.fmt = fmt:0x0/*_LVCFMT_LEFT*/;
@@ -77,7 +81,7 @@ listview={cls="listview";left=0;top=0;right=400;bottom=300;asel=false;bgcolor=16
         var image,fmt = this.getColImage(ind);
         
         var desc = image == 0;// 已按照升序排序，则按照降序排序；其余情况按照升序排序
-        var item = win.ui.ctrl.listview.LVITEM();
+        var item = ..win.ui.ctrl.listview.LVITEM();
         item.mask = 0x4/*_LVIF_PARAM*/;
         item.iSubItem = 0;
         
@@ -304,7 +308,7 @@ listview={cls="listview";left=0;top=0;right=400;bottom=300;asel=false;bgcolor=16
 			}
 			var index = this.addItem();//添加一行			
 			this.setRowTable(index, row);//附值整行
-			if( i % 100 == 0 ) win.delay(10);
+			if( i % 100 == 0 ) ..win.delay(10);
 		}
 		if( type(this.showDataAfter) == "function" ){
 			this.showDataAfter();//显示列表之后加载
@@ -329,7 +333,7 @@ listview={cls="listview";left=0;top=0;right=400;bottom=300;asel=false;bgcolor=16
 	openonnotify = function(id,code,ptr){
 		if( this.isSort ){	//排序
 			if (code == 0xFFFFFF94/*_LVN_COLUMNCLICK*/) {
-        		var nmlvw = win.ui.ctrl.listview.NMLISTVIEW();
+        		var nmlvw = ..win.ui.ctrl.listview.NMLISTVIEW();
         		..raw.convert(ptr, nmlvw);
         		if( this.setColorState ){//有字体颜色
         			this.colorAll = {};
@@ -357,7 +361,7 @@ listview={cls="listview";left=0;top=0;right=400;bottom=300;asel=false;bgcolor=16
         		if( ! notifyMessage.iItem && notifyMessage.iSubItem ) return ;
         		
     			this.createMenu( notifyMessage.iSubItem );//第几列
-    			var x,y = mouse.getPos()
+    			var x,y = ..mouse.getPos()
     			this.popmenu.popup(x,y,true);//弹出菜单
     		}
     	}
@@ -404,7 +408,7 @@ listview={cls="listview";left=0;top=0;right=400;bottom=300;asel=false;bgcolor=16
                         	if( ( message = 0x8/*_WM_KILLFOCUS*/)  || message == 0x101/*_WM_KEYUP*/ && wParam == 0xD/*_VK_RETURN*/  ) {
                             	update = true;
                         	}elseif(message == 0x201/*_WM_LBUTTONDOWN*/ || message == 0x202/*_WM_LBUTTONUP*/ ){
-                        		var x,y = win.getMessagePos(lParam)
+                        		var x,y = ..win.getMessagePos(lParam)
                         		var rc = edit.clientRect;  
                         		if( ! ::PtInRect(rc,x,y) ){
                         			update = true;
@@ -450,7 +454,7 @@ listview={cls="listview";left=0;top=0;right=400;bottom=300;asel=false;bgcolor=16
         			break ;
         		}
         	}
-        	if( key ) win.cur.setCur(hwndmouse);//鼠标形状变成手状
+        	if( key ) ..win.cur.setCur(hwndmouse);//鼠标形状变成手状
     	}
 		if( (# this.tooltipKey || this.tooltipAll) && code == 0xFFFFFF87/*_LVN_HOTTRACK*/){ //鼠标提示
 			var notifyMessage = this.listview.getNotifyMessage(code,ptr);
@@ -498,7 +502,7 @@ listview={cls="listview";left=0;top=0;right=400;bottom=300;asel=false;bgcolor=16
  	createMenu = function( colNum ){
 		if( this.popmenu ){ this.popmenu.close();}
 		
-		this.popmenu = win.ui.popmenu( this );//创建弹出菜单
+		this.popmenu = ..win.ui.popmenu( this );//创建弹出菜单
 		this.popmenu.add("复制",function(){
 			var name;
 			for(i,t in this.tabHeads){
@@ -508,7 +512,7 @@ listview={cls="listview";left=0;top=0;right=400;bottom=300;asel=false;bgcolor=16
 				}
 			}
 			var row = this.listview.selIndex;
-			win.clip.write(this.get(row,name));
+			..win.clip.write(this.get(row,name));
 		})
 		if( this[["rbMenu"]] ) {
 			this.popmenu.add();
@@ -531,9 +535,9 @@ listview={cls="listview";left=0;top=0;right=400;bottom=300;asel=false;bgcolor=16
 	exportToExcel = function(tdao,filename,sheetname = "sheet2"){
 		var pathname,err;
 		try{
-			pathname = fsys.dlg.save("Execl文件(*.xls)|*.xls|Execl文件(*.xlsx)|*.xlsx||",,,this.hwnd,,filename)
+			pathname = ..fsys.dlg.save("Execl文件(*.xls)|*.xls|Execl文件(*.xlsx)|*.xlsx||",,,this.hwnd,,filename)
 			if(!pathname){return ;} 
-			var excel = com.excel();
+			var excel = ..com.excel();
 			excel.alerts = false; //关闭所有操作提示	 	
 			var book = excel.WorkBooks.Add(); //创建工作簿
   			for(i=1;excel.Sheets.Count;1){
@@ -580,26 +584,16 @@ listview={cls="listview";left=0;top=0;right=400;bottom=300;asel=false;bgcolor=16
 }
 
 namespace listviewex{
-	import win.imageList;
-	import win.ui;
-	import win.ui.menu;
-	import win.ui.tooltip;
-	import win.clip;
-	import mouse;
-	import com.excel;
-	import fsys.dlg;
-	import win.cur;
-	
-	hwndmouse = win.cur.load(32649/*_IDC_HAND*/)//鼠标形状变成手状句柄	
+
+	hwndmouse = ..win.cur.load(32649/*_IDC_HAND*/)//鼠标形状变成手状句柄	
 	string = ..string;
 	table = ..table;
 	strcmp = ..string.cmp;
-	win = ..win;
 	
 	_metaProperty = ..util.metaProperty(
 		setRowHeight = {
 			_set = function( v=16 ){
-				var imageList = win.imageList(1, v);//行高
+				var imageList = ..win.imageList(1, v);//行高
 				owner.listview.setImageList( imageList, 1/*_LVSIL_SMALL*/);
 			}
 		};

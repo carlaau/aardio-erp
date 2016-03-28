@@ -1,11 +1,13 @@
 ﻿//tab 选项卡扩展
+
+import win.ui.menu;
 namespace carl.ctrl
 
 tab = class {
 	ctor( tabctrl ){
 		var mainForm = ..win.form.getForm(tabctrl.hwnd)
 		var x,y;
-		var menuTab = win.ui.popmenu(mainForm);//选项卡右键菜单
+		var menuTab = ..win.ui.popmenu(mainForm);//选项卡右键菜单
 		menuTab.add(
 			'关闭当前标签页',
 			function(id){ 
@@ -134,8 +136,6 @@ tab = class {
 }
 
 namespace tab{
-	import win.ui.menu;
-	
 	string = ..string;
 	table = ..table;
 }

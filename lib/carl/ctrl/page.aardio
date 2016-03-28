@@ -10,16 +10,13 @@ import process;
 namespace win.ui.ctrl; 
 class page { 
 	ctor(parent,tParam){
-		
-/*DSG{{*/
-this = win.form(text="aardio form";right=900;bottom=400;border="none";exmode="none";mode="child";parent=parent;tParam=tParam)
-this.add(
-btnSort={cls="static";text="设置列名";left=713;top=380;right=767;bottom=396;color=16711680;db=1;dl=1;notify=1;transparent=1;z=3};
-lvex={cls="listviewex";text="listview扩展控件";left=0;top=0;right=900;bottom=375;db=1;dl=1;dr=1;dt=1;edge=1;transparent=1;z=2};
-pagectrl={cls="pagectrl";text="分页控件";left=0;top=375;right=706;bottom=400;db=1;dl=1;edge=1;transparent=1;z=1};
-txtMsg={cls="static";left=775;top=380;right=899;bottom=396;bgcolor=15780518;color=32768;db=1;dl=1;dr=1;transparent=1;z=4}
-)
-/*}}*/
+		this = ..win.form(text="aardio form";right=900;bottom=400;border="none";exmode="none";mode="child";parent=parent;tParam=tParam)
+		this.add(
+			btnSort={cls="static";text="设置列名";left=713;top=380;right=767;bottom=396;color=16711680;db=1;dl=1;notify=1;transparent=1;z=3};
+			lvex={cls="listviewex";text="listview扩展控件";left=0;top=0;right=900;bottom=375;db=1;dl=1;dr=1;dt=1;edge=1;transparent=1;z=2};
+			pagectrl={cls="pagectrl";text="分页控件";left=0;top=375;right=706;bottom=400;db=1;dl=1;edge=1;transparent=1;z=1};
+			txtMsg={cls="static";left=775;top=380;right=899;bottom=396;bgcolor=15780518;color=32768;db=1;dl=1;dr=1;transparent=1;z=4}
+		)
 
 		this.pagectrl.listview(this.lvex.listview);
 
@@ -215,7 +212,6 @@ namespace page {
 	string = ..string;
 	table = ..table;
 	math = ..math;
-	win = ..win;
 	
 	hwndmouse = ..win.cur.load(32649/*_IDC_HAND*/)//鼠标形状变成手状句柄
 	
