@@ -8,6 +8,8 @@
 
 `/aardio-erp` erp框架客户端源码
 
+![image](http://bbs.aardio.org/data/attachment/forum/201505/10/163148ylheqev9dhrvpwnw.png)
+
 ## 框架使用步骤
 
 1.先把用户库 `\lib\carl\` 复制到 ide标准库 `\lib\carl\` 目录下,否则运行不了.(此自定义库可做为标准库使用,)
