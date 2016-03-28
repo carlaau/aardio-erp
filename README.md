@@ -9,6 +9,7 @@
 `/aardio-erp` erp框架客户端源码
 
 ![image](http://bbs.aardio.org/data/attachment/forum/201505/10/163148ylheqev9dhrvpwnw.png)
+![image](http://bbs.aardio.org/data/attachment/forum/201505/10/163202lu9293n4zky923ug.png)
 
 ## 框架使用步骤
 
