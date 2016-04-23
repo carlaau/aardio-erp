@@ -1,4 +1,3 @@
-import fsys.codepage;
 
 namespace carl.sql
 
@@ -6,7 +5,7 @@ namespace ms{
 	string = ..string;
 	table = ..table;
 	
-	getInsertSql = function(tabname,tab, utf8){
+	getInsertSql = function(tabname,tab){
 		var t = {};
 		table.push(t,"insert into " + tabname + "(");
 		for k,v in table.eachName(tab){
@@ -17,12 +16,10 @@ namespace ms{
 		for k,v in table.eachName(tab){
 			if(type(v) == type.string){
 				v = string.str(v);
-				if(utf8 && !..fsys.codepage.isTextUtf8(v)) v = string.fromto(v,0,65001);
-				if(string.lower(v) == "getdate()" || v === "NULL"){				
+				if(string.lower(v) == "getdate()" || v === "NULL" || string.startWith(v,"@")){				
 					table.push(t,v,",");
 				}
 				else {
-					if(utf8) table.push(t,"N");
 					table.push(t,"'",string.replace(v,"'","''"),"'",",");
 				}
 			}
@@ -35,19 +32,17 @@ namespace ms{
 		return string.join(t); 
 	};
 	
-	getUpdateSql = function(tabname,tab,where,utf8){
+	getUpdateSql = function(tabname,tab,where){
 		var t = {};
 		table.push(t,"update " + tabname + " set ");
 		for k,v in table.eachName(tab){
 			if(type(v) == type.string){
 				v = string.str(v);
-				if(utf8 && !..fsys.codepage.isTextUtf8(v)) v = string.fromto(v,0,65001);
 				if(string.lower(v) == "getdate()" || v === "NULL"){
 					table.push(t,k,"=",v,",")
 				}
 				else {
 					table.push(t,k,"=");
-					if(utf8) table.push(t,"N");
 					table.push(t,"'",string.replace(v,"'","''"),"'",",")
 				}
 			}
@@ -78,7 +73,7 @@ namespace my{
 	string = ..string;
 	table = ..table;
 	
-	getInsertSql = function(tabname,tab, utf8){
+	getInsertSql = function(tabname,tab){
 		var t = {};
 		table.push(t,"insert into " + tabname + "(");
 		for k,v in table.eachName(tab){
@@ -89,7 +84,6 @@ namespace my{
 		for k,v in table.eachName(tab){
 			if(type(v) == type.string){
 				v = string.str(v);
-				if(utf8 && !..fsys.codepage.isTextUtf8(v)) v = string.fromto(v,0,65001);
 				if(string.lower(v) == "now()" || v === "NULL"){				
 					table.push(t,v,",");
 				}else {
@@ -105,13 +99,12 @@ namespace my{
 		return string.join(t); 
 	};
 	
-	getUpdateSql = function(tabname,tab,where,utf8){
+	getUpdateSql = function(tabname,tab,where){
 		var t = {};
 		table.push(t,"update " + tabname + " set ");
 		for k,v in table.eachName(tab){
 			if(type(v) == type.string){
 				v = string.str(v);
-				if(utf8 && !..fsys.codepage.isTextUtf8(v)) v = string.fromto(v,0,65001);
 				if(string.lower(v) == "now()" || v === "NULL"){
 					table.push(t,k,"=",v,",")
 				}

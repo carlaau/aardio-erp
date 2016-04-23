@@ -22,10 +22,11 @@ ahtmlServer = function(serverUrl,funcName, ...){
 
 	var func = function(serverUrl, rsaPublicKey, funcName, ...){
 		import carl.rpc.client;
-		var ahtml = carl.rpc.client(serverUrl, rsaPublicKey);
-		ahtml.code = "aardio";
-		var t = { ahtml[funcName](...) };
-		ahtml.close();
+		var rpc = carl.rpc.client(serverUrl, rsaPublicKey);
+		rpc.code = "aardio";
+		rpc.client.contentType = "application/octet-stream";
+		var t = { rpc[funcName](...) };
+		rpc.close();
 		return true,t;
 	}
 	

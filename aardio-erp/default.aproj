@@ -11,7 +11,7 @@
 			<file name="mainLayout.aardio" path="res\Main\mainLayout.aardio" comment="res\Main\mainLayout.aardio"/>
 			<file name="loginLayout.aardio" path="res\Main\loginLayout.aardio" comment="res\Main\loginLayout.aardio"/>
 		</folder>
-		<folder name="System" path="res\System" comment="res\System">
+		<folder name="System" path="res\System" comment="res\System" embed="false">
 			<file name="UserAddEdit.aardio" path="res\System\UserAddEdit.aardio" comment="res\System\UserAddEdit.aardio"/>
 			<file name="User.aardio" path="res\System\User.aardio" comment="res\System\User.aardio"/>
 			<file name="MenuAddEdit.aardio" path="res\System\MenuAddEdit.aardio" comment="res\System\MenuAddEdit.aardio"/>

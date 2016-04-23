@@ -6,6 +6,7 @@ import carl.rpc.server;
 import carl.mssql;
 import carl.mysql;
 import carl.oracle;
+import carl.sql;
 
 global.onError = function( err,over ){ 
     if(!over){
@@ -21,7 +22,6 @@ var fcgiClient = fastcgi.client();
 
 fcgiClient.run(
 	function(response,request){
-	 
 	 	/*
 		500错误应用级别的错误服务器上本地打开网页可以看到,
 		CGI级别的错误请查看"CGI.EXE目录/config"下面生成的日志文件
