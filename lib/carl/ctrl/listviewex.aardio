@@ -2,7 +2,7 @@
 namespace carl.ctrl.listviewex{}
 
 import mouse;
-import com.excel;
+import access;
 import fsys.dlg;
 import win.clip;
 import win.ui.menu;
@@ -10,6 +10,7 @@ import win.ui.tooltip;
 import win.cur;
 import win.imageList;
 import win.ui.ctrl.metaProperty;
+import carl.sql;
 
 namespace win.ui.ctrl; 
 
@@ -533,48 +534,42 @@ class listviewex {
 	}
 
 	exportToExcel = function(tdao,filename,sheetname = "sheet2"){
-		var pathname,err;
-		try{
-			pathname = ..fsys.dlg.save("Execl文件(*.xls)|*.xls|Execl文件(*.xlsx)|*.xlsx||",,,this.hwnd,,filename)
-			if(!pathname){return ;} 
-			var excel = ..com.excel();
-			excel.alerts = false; //关闭所有操作提示	 	
-			var book = excel.WorkBooks.Add(); //创建工作簿
-  			for(i=1;excel.Sheets.Count;1){
-  				if(i>1) excel.ActiveWorkbook.Sheets(1).Delete();
-  			}
-			var sheet = excel.ActiveWorkbook.Sheets(1);
-			sheet.Select();	
-			sheet.Name = sheetname;
-			for(n=1;#tdao;1){
-				var key = tdao[n]
-				var t = this.getHead(key);
-				sheet.Cells(1,n).Value2 = t ? t.name : key; 
-			}
-			var index,tindex = this.getCheckedorSelected();
-			for(i,index in tindex){
-				for(n=1;#tdao;1){
-					var key = tdao[n];
-					var txt = "";
-					var t = this.getHead(key);
-					if(t) txt = this.get( index,key );
-					var num,len = tonumber(txt);
-            		txt = ( #txt == len and len <=8 ) ? txt : "'" + txt;
-					sheet.Cells(i+1, n).Value2 = txt;
-				}
-			};
-			excel.ActiveWorkBook.SaveAs(pathname);
-			excel.ActiveWorkbook.close();
-			excel.Quit();
-			book = null;
-			sheet = null;
-			excel = null;//释放所有对excel对象的引用
-			collectgarbage("collect");//内存回收,确保excel完全退出
-		}
-		catch(e){
-			err = e;
-		}
-		return pathname,err; 
+        var pathname,ok,dbXls,err;
+        try{
+            pathname = ..fsys.dlg.save("Execl文件(*.xls)|*.xls|Execl文件(*.xlsx)|*.xlsx||",,,this.hwnd,,filename)
+            if( !pathname ) return; 
+            dbXls,err = ..access(pathname); //文件不存在可自动创建
+            if( !dbXls ) return;
+            if(dbXls.existsTable( sheetname ) ) dbXls.exec("DROP TABLE [" ++ sheetname ++ "]");
+            var tabHead = {};
+            var tab = {};
+            table.push(tab,"CREATE TABLE " ++ sheetname ++ "(");
+            for(n=1;#tdao;1){
+                var key = tdao[n];
+                var t = this.getHead(key);
+                var name = (t ? t.name : key);
+                table.push(tab,name," MEMO",(n<#tdao ? "," : ")"));
+                tabHead[key] = name;
+            }
+            sql = string.join(tab);
+            dbXls.exec(sql);
+            var index,tindex = this.getCheckedorSelected();
+            for(i,index in tindex){
+            	var trow = this.getRowTable(index);
+            	var tsave = {};
+            	for(k,v in trow){
+            		if(tabHead[k]) tsave[tabHead[k]] = v;
+            	}
+            	var sql = ..carl.sql.ms.getInsertSql("[" ++ sheetname ++ "]",tsave);
+            	dbXls.exec(sql);
+            }
+            dbXls.close();
+            ok = true;
+    	}
+    	catch(e){
+            err = e;
+    	}
+    	return (ok ? pathname : null),err;
 	}
 	
 	getListview = function(){
@@ -628,7 +623,7 @@ win.ui.ctrl.listviewex = listview扩展控件
 !lvEx.showData( tab, pageNum, pageSize ) = //显示数据列表，参数为sql查询返回的table,第几页,每页记录数
 !lvEx.showDataBefore() = @.showDataBefore = function(){\n	__\n}//显示列表数据之前加载
 !lvEx.showDataAfter() = @.showDataAfter = function(){\n	__\n}//显示列表数据之后加载
-!lvEx.exportToExcel(.(列名table对像,文件名字) = 导出选择中行，参数一:要导出的列名table,参数二可不填,
+!lvEx.exportToExcel(.(列名table对像,文件名字) = 导出选择中行，参数一:要导出的列名key值table,参数二可不填,成功:返回文件路径，失败:返回null,err错误信息
 !lvEx.addEdit = @.addEdit = {"__"}//设置原地编辑的列名key
 !lvEx.clickMouse = @.clickMouse = {"__"}//设置鼠标变成手状的列名key
 !lvEx.isCellEdit(col) = 参数:列数值，判断某一列是否有双击原地编辑

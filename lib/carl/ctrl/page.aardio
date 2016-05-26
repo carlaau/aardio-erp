@@ -193,9 +193,8 @@ class page {
 		filename := tostring(tnow)
 		var ok,err = this.lvex.exportToExcel(tdao, filename);//文件名称
 		if(ok){
-			pathname = ok;
 			if(this.msgboxTest("导出成功。是否打开？","提示")){
-				..process.execute(pathname);
+				..process.execute(ok);
 			}
 		}elseif(err) {
 			this.msgbox("导出失败," + err,"提示")
