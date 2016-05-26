@@ -551,8 +551,7 @@ class listviewex {
                 table.push(tab,name," MEMO",(n<#tdao ? "," : ")"));
                 tabHead[key] = name;
             }
-            sql = string.join(tab);
-            dbXls.exec(sql);
+            dbXls.exec(string.join(tab));
             var index,tindex = this.getCheckedorSelected();
             for(i,index in tindex){
             	var trow = this.getRowTable(index);
