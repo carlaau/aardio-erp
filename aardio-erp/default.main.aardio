@@ -7,7 +7,7 @@ global.onError = function( err,over ){
         import debug;
         var stack = debug.traceback(,"调用栈",3);
     }
-    ws.System.Errlog.onError(e);
+    ws.System.Errlog.onError(err);
     if( _STUDIO_INVOKED ) return err; 
 }
 
