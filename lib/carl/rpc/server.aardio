@@ -1,4 +1,8 @@
 ﻿//server 服务端
+import carl.rsa;
+import carl.rpc;
+import web.json;
+
 namespace carl.rpc
 
 server = class {
@@ -13,7 +17,7 @@ server = class {
 		var code = ..request.get["code"]:"";
 		if( !#funcName ) return ; 
 		if( # this.rsaPrivateKey ){
-			postdata = carl.rsa.decrypt(postdata, this.rsaPrivateKey);
+			postdata = ..carl.rsa.decrypt(postdata, this.rsaPrivateKey);
 			if( !postdata ) return null,"Decryption post data error";
 		}
 		var tab,err;
@@ -21,30 +25,26 @@ server = class {
 			if( string.cmpMatch(code,"aardio" ) ){
 				tab = eval(postdata)
 			}else {
-				tab = web.json.parse(postdata);
+				tab = ..web.json.parse(postdata);
 				if(tab) ..carl.rpc.unformat(tab);
 			}
 		}
 		catch(e){
 			err = e;
 		}
-		if( !tab ) return null,"carl.rpc.receive() parameter error," ++ (err:"");
+		if( !tab ) return null,"rpc.receive parameter error," ++ (err:"");
 		return funcName,table.unpackArgs(tab);
 	}
 	
 	reply = function( ... ){
 		var t = {...};
-		carl.rpc.format(t);
-		return web.json.stringify(t); 
+		..carl.rpc.format(t);
+		return ..web.json.stringify(t); 
 	}
-	
 }
 
 namespace server{
-	import carl.rsa;
-	import carl.rpc;
-	import web.json;
-	
+
 	table = ..table;
 	string = ..string;
 }
