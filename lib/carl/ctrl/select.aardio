@@ -6,13 +6,14 @@ import win.ui.ctrl;
 
 win.ui.ctrl.select = class {
 	ctor(parent,tParam){
-		this = ..win.form(text="aardio form";right=100;bottom=25;border="none";exmode="none";mode="child";parent=parent;tParam=tParam)
+		this = ..win.form(right=100;bottom=25;border="none";exmode="none";mode="child";parent=parent;tParam=tParam)
 		this.add(
 			combobox={cls="combobox";left=0;top=0;right=101;bottom=25;ah=1;aw=1;db=1;dl=1;dr=1;dt=1;edge=1;hscroll=1;items={};mode="dropdownlist";vscroll=1;z=1}
 		)
 
 		this.valueId = "value";
 		this.textId = "text";
+		this.list = {};
 		..table.mixin(this@, _metaProperty);
 	};
 	
@@ -34,7 +35,7 @@ win.ui.ctrl.select = class {
 		if(type(row) == type.table) ..table.mixin(t,row);
 		t[this.valueId] = k;
 		t[this.textId] = v;
-		..table.push(this.table,t);
+		..table.push(this.list,t);
 	}
 
 	findValue = function(v){
@@ -54,7 +55,7 @@ win.ui.ctrl.select = class {
 	clear = function(){
 		this.tabValue = {};
 		this.tabText = {};
-		this.table = {};
+		this.list = {};
 		this.combobox.clear();
 	}
 }
@@ -65,7 +66,7 @@ namespace win.ui.ctrl.select{
 	
 		items = {
 			_get = function(){ 
-				return owner.table;
+				return owner.list;
 			}
 			_set = function( t ){
 				for(i=1;#t;1){
@@ -117,7 +118,7 @@ namespace win.ui.ctrl.select{
 		
 		getItemData = {
 			_get = function(){ 
-				return owner.table[[owner.combobox.selIndex]];
+				return owner.list[[owner.combobox.selIndex]];
 			}
 		};
 	)

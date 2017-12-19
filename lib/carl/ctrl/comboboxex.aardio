@@ -3,19 +3,18 @@ namespace carl.ctrl.comboboxex{}
 
 import win.ui.tracker;
 import win.ui.ctrl.metaProperty;
+import carl.ctrl.treeviewex;
 
 namespace win.ui.ctrl; 
 
 class comboboxex{
 	ctor(parent,tParam){
 	
-/*DSG{{*/
-this = win.form(text="aardio form";right=100;bottom=25;border="none";exmode="none";mode="child";parent=parent;tParam=tParam)
-this.add(
-btn={cls="button";text="u";left=82;top=1;right=100;bottom=25;dr=1;dt=1;font=LOGFONT(name='Marlett';charset=2;weight=500);tabstop=1;z=2};
-edit={cls="edit";left=1;top=1;right=82;bottom=25;autohscroll=false;autovscroll=false;dl=1;dr=1;dt=1;edge=1;hidesel=1;readonly=1;z=1}
-)
-/*}}*/
+		this = ..win.form(right=100;bottom=25;border="none";exmode="none";mode="child";parent=parent;tParam=tParam)
+		this.add(
+		btn={cls="button";text="u";left=82;top=1;right=100;bottom=25;dr=1;dt=1;font=LOGFONT(name='Marlett';charset=2;weight=500);tabstop=1;z=2};
+		edit={cls="edit";left=1;top=1;right=82;bottom=25;autohscroll=false;autovscroll=false;dl=1;dr=1;dt=1;edge=1;hidesel=1;readonly=1;z=1}
+		)
 
 		this.btn.oncommand = function(id,event){
 			this.hideForm();
@@ -38,7 +37,7 @@ edit={cls="edit";left=1;top=1;right=82;bottom=25;autohscroll=false;autovscroll=f
 					if(this.isShow) this.hideForm();
 					break ;
 				}
-				..win.delay(1000)
+				..win.delay(200)
 			}
 		}
 	};
@@ -89,7 +88,7 @@ edit={cls="edit";left=1;top=1;right=82;bottom=25;autohscroll=false;autovscroll=f
 		this.tvEx.exExpandAll();
 		this.edit.text = this.text;
 		this.setChecked();
-		this.tvEx.ensureVisible(this.tvEx.getRoot())
+		this.tvEx.ensureVisible(this.tvEx.getFirst())
 	}
 	
 	setChecked = function(){
@@ -152,11 +151,8 @@ edit={cls="edit";left=1;top=1;right=82;bottom=25;autohscroll=false;autovscroll=f
 }
 
 namespace comboboxex{
-	import carl.ctrl.treeviewex;
-	
 	string = ..string;
 	table = ..table;
-	win = ..win;
 }
 
 /*intellisense()

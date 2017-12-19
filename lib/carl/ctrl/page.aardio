@@ -177,8 +177,8 @@ class page {
 			this.msgbox("请先打勾行或者选中行","提示")
 			return false; 
 		}
-		this.parent.index = index;
-		this.parent.tindex = t;
+		//this.parent.index = index;
+		//this.parent.tindex = t;
 		this.index = index;
 		this.tindex = t;
 		return true; 

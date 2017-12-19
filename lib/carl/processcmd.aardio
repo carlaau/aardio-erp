@@ -1,12 +1,18 @@
 //processcmd 进程通信
+import win;
+import win.guid;
+import process;
+import process.command;
+import thread.table;
+
 namespace carl
 
 processcmd = class {
 	ctor( guid, ... ){
 		var cmdline = _CMDLINE;
-		var owerPid = process.getId();
+		var owerPid = ..process.getId();
 		if( !guid ){
-			guid = win.guid.create();
+			guid = ..win.guid.create();
 			guid = string.upper( tostring(guid) );
 		}
 		if( #cmdline ){
@@ -19,12 +25,13 @@ processcmd = class {
 				return null,"不是有效参数"; 
 			}
 		}
-		var mutex,err = process.command.join(guid);//加入进程群组
-		if(!mutex) return null,err;
-
-		this.pids = thread.table("table" + guid);
+		if(!_STUDIO_INVOKED){
+			var mutex,err = ..process.command.join(guid);//加入进程群组
+			if(!mutex) return null,err;
+		}
+		this.pids = ..thread.table("table" + guid);
 		this.guid = guid;
-		this.serverCmd = process.command( ... );//注册进程命令对象
+		this.serverCmd = ..process.command( ... );//注册进程命令对象
 		
 		if( !..thread.get(guid) ) {
 			..thread.set(guid, true)
@@ -58,13 +65,13 @@ processcmd = class {
 		t.toPid = toPid;
 		t.msg = {...};
 		if( types == "send" ){
-			return process.command.send("receive",t);
+			return ..process.command.send("receive",t);
 		}
 		elseif( types == "post" ){
-			return process.command.post("receive",t);
+			return ..process.command.post("receive",t);
 		}
 		elseif( types == "quit" ){
-			process.command.post("quit",toPid);
+			..process.command.post("quit",toPid);
 		}
 	}
 	
@@ -82,7 +89,7 @@ processcmd = class {
 		var t = {}
 		t.guid = guid;
 		t.parentPid = owerPid;
-		var pro,err = process(exepath, table.tostring(t));//命令参数 cmd
+		var pro,err = ..process(exepath, table.tostring(t));//命令参数 cmd
 		if(!pro) return null,err; 
 		this.pids.push(pro.id);
 		delay(sec)
@@ -98,11 +105,11 @@ processcmd = class {
 		try{
 			var p;
 			if( toPid ){
-				p = process(toPid);
+				p = ..process(toPid);
 				if(p) p.terminate();
 			}else {
 				for( i,pid in this.pids.each() ){
-					p = process(toPid);
+					p = ..process(toPid);
 					if(p) p.terminate();
 				}
 			}
@@ -115,11 +122,11 @@ processcmd = class {
 		while(true){
 			bool = false;
 			if(pid){
-				if( process.getPath(pid) ) bool = true;
+				if( ..process.getPath(pid) ) bool = true;
 			}
 			else {
 				for( i,pid in this.pids.each() ){
-					if(process.getPath(pid)){
+					if(..process.getPath(pid)){
 						bool = true;
 						break ;
 					}
@@ -148,12 +155,6 @@ processcmd = class {
 }
 
 namespace processcmd{
-	import win;
-	import win.guid;
-	import process;
-	import process.command;
-	import thread.table;
-
 	table = ..table;
 	string = ..string;
 	delay = ..win[["ui"]] ?  ..win[["delay"]] : sleep;

@@ -19,7 +19,7 @@ mssql = class {
 	
 	regetTable = function(sql,...){//重写原库getTable函数
 		var rs,err = this.conn.openRecordSet(sql,,,...);
-		if(!rs) error(err,2);
+		if(!rs) return null,err;
 		
 		var fields = {};
 		for( i=1;rs.Fields.Count ){
@@ -39,8 +39,7 @@ mssql = class {
         			v = tostring(v);
         		}
         		row[name] = v;
-        	}
-        	
+        	}        	
         	table.push( result,row );
         	rs.movenext();
         }
@@ -48,13 +47,12 @@ mssql = class {
 		return result;
 	}
 	
-	exec = function(sql, check=false){//执行SQL或存储过程,无返回值
-		//if(check && fsys.codepage.isTextUtf8(sql))
-			//sql = string.toUnicode(sql,65001);
+	exec = function(sql,...){//执行SQL或存储过程,无返回值
+		var tab = {...};
 		var ok,err;
 		try{
 			if( this.conn )
-				ok,err = this.conn.exec(sql);
+				ok,err = this.conn.exec(sql,table.unpack(tab));
 		}
 		catch(e){
 			err = e;
@@ -62,13 +60,12 @@ mssql = class {
 		return ok,err;
 	}
 	
-	getTable = function(sql, check=false){//执行SQL,返回table记录集
-		//if(check && fsys.codepage.isTextUtf8(sql))
-			//sql = string.toUnicode(sql,65001);
+	getTable = function(sql,...){//执行SQL,返回table记录集
+		var tab = {...};
 		var t,err;
 		try{
 			if( this.conn )
-				t,err = this.regetTable(sql); 
+				t,err = this.regetTable(sql,table.unpack(tab)); 
 		}
 		catch(e){
 			err = e;
@@ -77,32 +74,65 @@ mssql = class {
 		return t,err;
 	}
 	
-	transaction = function( tsql, check=false){//事务执行
-		var sql1=/*BEGIN TRANSACTION
-		DECLARE @errorSun INT
-		SET @errorSun=0 */
-
-		var sql2=/*IF @errorSun<>0 
-		BEGIN 
-		ROLLBACK TRANSACTION
-		END 
-		ELSE 
-		BEGIN 
-		COMMIT TRANSACTION
-		END*/
-
-		var sql3 = "SET @errorSun=@errorSun+@@ERROR";//累计是否有
-
-		var t = {};
-		table.push(t, sql1, '\r\n');
-		for(i=1;#tsql;1){
-			table.push(t, tsql[i], '\r\n', sql3, '\r\n');
+	getTableFirst = function(sql,...){//执行SQL,返回第一条记录
+		var row,result,err,rs;
+		var tp = {...}
+		try{
+			if( this.conn ){
+				rs,err = this.conn.openRecordSet(sql,,,table.unpack(tp));
+				if(!rs) return;
+				
+				var fields = {};
+				for( i=1;rs.Fields.Count ){
+					fields[i] = rs.Fields(i-1).Name; 
+				}
+        		var trim = string.trimright;
+        		row = {};
+        		if(!rs.eof){        			
+        			var v;
+        			for(i,name in fields){ 
+        				v = rs( name ).value;
+        				if( type( v ) == "string" ){
+        					v = trim(v);
+        				}
+        				elseif(..time.istime(v)){//增加时间判断
+        					v.format="%Y-%m-%d %H:%M:%S";
+        					v = tostring(v);
+        				}
+        				row[name] = v;
+        			}
+        		}      		
+			}
 		}
-		table.push(t, sql2)
-		var sql = string.join(t);
-		//if(check && fsys.codepage.isTextUtf8(sql))
-			//sql = string.toUnicode(sql,65001);
-		return this.exec(sql);
+		catch(e){
+			err = e;
+		}
+		if( type(row) != type.table ) row = null;
+		return row,err;
+	}
+	
+	transaction = function( tsql, ... ){//事务执行
+		if(!#tsql) return null,"无事务SQL语句";  
+		var sql =/*
+		SET NOCOUNT ON;
+		BEGIN TRY
+			BEGIN TRAN
+			{sql}
+			select 1 as Result
+			COMMIT TRAN
+			END TRY
+		BEGIN CATCH  
+			ROLLBACK TRAN  
+			select -1 as Result,('事务失败,'+ ERROR_MESSAGE()) as Msg
+		END CATCH  
+ 		*/
+ 		var str = (type.table == type(tsql)) ? string.join(tsql,'\r\n') : tsql;
+ 		if( ... ) str = sqlServer.formatSqlParameters(str, ...);
+		sql = string.replace(sql,"@{sql}", str);
+		var tab,err = this.getTable(sql);
+		if(!tab) return null,err;
+		if(tab[1]["Result"] == 1) return true; 
+		return null,tab[1]["Msg"];
 	}
 	
 	storedProcedures = function(name, ...){//执行存储过程,存储过程名称,参数(只能字符型)
@@ -132,7 +162,8 @@ mssql = class {
 	getRsTable = function(rs){
 		var fields = {};
 		for( i=1;rs.Fields.Count ){
-			fields[i] = rs.Fields(i-1).Name : i; 
+			var name = rs.Fields(i-1).Name;
+			fields[i] = #name ? name : i; 
 		}
     	var trim = string.trimright;
     	var result = { fields = fields  };
@@ -189,7 +220,6 @@ mssql = class {
 namespace mssql{
 	import sqlServer;
 	import com;
-	import fsys.codepage;
 	
 	table = ..table;
 	string = ..string;
@@ -200,9 +230,10 @@ carl.mssql = mssql数据库
 carl.mssql( server,database,uid,pwd ) = 创建mssql数据库连接
 carl.mssql() = !mssql.
 !mssql.conn = 数据库连接句柄
-!mssql.getTable(sql,false) = 第二个参数:是否自动检查UTF-8,返回查询结果集table对像\n每个元素代表一行,每行由N个键值对列组成,键fields为列名结果集
-!mssql.exec(sql,false) = 执行sql,第二个参数:是否自动检查UTF-8,成功返回ture,失败返回null,err
-!mssql.transaction(tab) = 事务执行多个sql语句,参数table对像,第二个参数:是否自动检查UTF-8,成功返回ture,失败返回null,err,说明:全部执行成功,或全部失败
+!mssql.getTable(sql) = 返回查询结果集table对像\n每个元素代表一行,每行由N个键值对列组成,键fields为列名结果集
+!mssql.getTableFirst(sql) = 执行SQL,返回第一条记录,空记录返回空table对像
+!mssql.exec(sql) = 执行sql,成功返回ture,失败返回null,err
+!mssql.transaction(tab) = 事务执行多个sql语句,参数table对像或sql语句,成功返回ture,失败返回null,err,说明:全部执行成功,或全部失败
 !mssql.storedProcedures(name) = 执行存储过程,参数1:存储过程名称,参数2以后,是传存储过程函数参数(参数只能是字符型)
 !mssql.close() = 关闭连接
 end intellisense**/

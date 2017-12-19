@@ -16,7 +16,7 @@ namespace ms{
 		for k,v in table.eachName(tab){
 			if(type(v) == type.string){
 				v = string.str(v);
-				if(string.lower(v) == "getdate()" || v === "NULL" || string.startWith(v,"@")){				
+				if(string.lower(v) == "getdate()" || v === "NULL" || (string.startWith(v,"@") && !string.find(string.right(v,#v-1),"\A"))){		
 					table.push(t,v,",");
 				}
 				else {

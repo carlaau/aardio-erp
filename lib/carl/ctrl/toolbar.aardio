@@ -43,6 +43,10 @@ class toolbar {
 		}
 	}
 	
+	add = function(...){
+		return this.toolbar.add(...); 
+	}
+	
 	createButton = function(name,func,num, ...){
 		var t = {...};
 		var funcom = function(id){

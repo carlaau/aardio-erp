@@ -47,11 +47,9 @@ class treeviewex{
 	}
 	
 	exExpandAll = function(){
-		this.enum(
-			function(hItem,parent){
-				this.expand(hItem)
-			}
-		)
+		for hChild in this.each(){
+			this.expandAll(hChild)
+		}
 	}
 	
 	exClickSetChecked = function(hParent){

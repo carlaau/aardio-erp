@@ -1,4 +1,4 @@
-import win.ui;
+﻿import win.ui;
 /*DSG{{*/
 var winform = win.form(text="loading...";right=600;bottom=401;border="dialog frame";parent=...)
 winform.add(
@@ -30,7 +30,7 @@ tvUser.exMouseClick = function(hItem){//单击事件
 	var SystemUserId = tab.SystemUserId;
 	if(!SystemUserId) return ;
 	SystemUserId = tostring(SystemUserId);
-	var tabtvMenu = tvMenu.getItemData(tvMenu.getRoot());
+	var tabtvMenu = tvMenu.getItemData(tvMenu.getFirst());
 	if(tabtvMenu.SystemUserId == SystemUserId) return ;	
 	
 	var t = tabUserInfo[SystemUserId];
@@ -43,7 +43,7 @@ tvUser.exMouseClick = function(hItem){//单击事件
 	if(!tMenuId) return ;
 	tabUserMenu[SystemUserId] = tMenuId;
 	tabtvMenu.SystemUserId = SystemUserId;
-	tvMenu.setItemText(tvMenu.getRoot(),tab.text)
+	tvMenu.setItemText(tvMenu.getFirst(),tab.text)
 
 	winform.cbIsAdmin.checked = t["IsAdmin"] == "1" ? true : false;
 	tvMenu.enum(
@@ -106,7 +106,7 @@ winform.load = function(){
 }
 
 winform.btnSave = function(){
-	var t = tvMenu.getItemData(tvMenu.getRoot());
+	var t = tvMenu.getItemData(tvMenu.getFirst());
 	var SystemUserId = t.SystemUserId;
 	if(!SystemUserId){
 		winform.msgbox("请指定用户!","提示")

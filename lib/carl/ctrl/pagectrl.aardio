@@ -6,7 +6,7 @@ namespace win.ui.ctrl;
 class pagectrl { 
 	ctor(parent,tParam){
 /*DSG{{*/
-this = ..win.form(text="aardio form";right=706;bottom=22;border="none";exmode="none";mode="child";parent=parent;tParam=tParam)
+this = win.form(text="aardio form";right=706;bottom=22;border="none";exmode="none";mode="child";parent=parent;tParam=tParam)
 this.add(
 btnPageEnd={cls="static";text="尾页";left=583;top=6;right=613;bottom=21;color=16711680;dl=1;dt=1;notify=1;transparent=1;z=13};
 btnPageNext={cls="static";text="下一页";left=534;top=6;right=573;bottom=21;color=16711680;dl=1;dt=1;notify=1;transparent=1;z=14};
