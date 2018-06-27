@@ -183,15 +183,21 @@ class page {
 		this.tindex = t;
 		return true; 
 	}
-
-	exportToExecl = function(filename){
+	
+	export = function(filename,sheetname,action){
 		if(not this.start()){return false; }
 		var tdao = {}
 		for(k,t in this.table) if(t.len > 0) table.push(tdao,t.key);
 		var tnow = ..time();
 		tnow.format = "%Y%m%d-%H%M%S";
 		filename := tostring(tnow)
-		var ok,err = this.lvex.exportToExcel(tdao, filename);//文件名称
+		var ok,err;
+		if(action == "com"){
+			ok,err = this.lvex.exportToExcelCom(tdao, filename,sheetname);//文件名称
+		}
+		else{
+			ok,err = this.lvex.exportToExcel(tdao, filename,sheetname);//文件名称
+		}		
 		if(ok){
 			if(this.msgboxTest("导出成功。是否打开？","提示")){
 				..process.execute(ok);
@@ -199,6 +205,18 @@ class page {
 		}elseif(err) {
 			this.msgbox("导出失败," + err,"提示")
 		}
+	}
+	
+	exportToExcel = function(filename,sheetname){
+		this.export(filename,sheetname);
+	}
+
+	exportToExcelCom = function(filename,sheetname){
+		this.export(filename,sheetname,"com");
+	}
+	
+	exportToExecl = function(filename,sheetname){//弃用
+		this.exportToExcel(filename,sheetname);
 	}
 	
 	refresh = function(){
@@ -256,7 +274,8 @@ namespace page {
 !page.drive = @.drive = "mysql";//数据库类型,mysql或mssql,默认mysql
 !page.lastSql = 最后一次执行的SQL语句
 !page.setBottomText = @.setBottomText = "";//设置页面底部信息
-!page.exportToExecl() = 导出到Execl,参数:文件名,可忽略
+!page.exportToExcel() = 导出到Execl,参数:文件名,工作溥,可忽略 (使用access)
+!page.exportToExcelCom() = 导出到Execl,参数:文件名,工作溥,可忽略(使用com.excel)
 !page.refresh() = 刷新当前页
 !page.listview() = 返回原始listview控件对像\n!listview.
 !page.listviewEx() = 返回listviewex扩展控件对像\n!lvEx.

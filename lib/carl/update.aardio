@@ -102,11 +102,12 @@ namespace update{
 	io = ..io;
 	time = ..time;
 	
+	var projectDir = "\";
 	if( _STUDIO_INVOKED ){
-		import ide
+		import ide;
+		projectDir = ide.getProjectDir();
 	}
-	projectDir = _STUDIO_INVOKED == "thread" ? ide.getProjectDir() : "\";
-	
+
 	//获取当前版本号
 	getVersion = function(res = "res"){
 		if( !_STUDIO_INVOKED ){

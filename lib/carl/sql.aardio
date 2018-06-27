@@ -9,14 +9,16 @@ namespace ms{
 		var t = {};
 		table.push(t,"insert into " + tabname + "(");
 		for k,v in table.eachName(tab){
-			table.push(t,k,",");
+			if(type(v) == type.string || type(v) == type.number || type(v) == type.boolean){
+				table.push(t,k,",");
+			}
 		}
 		t[#t] = "";
 		table.push(t,")values(");
 		for k,v in table.eachName(tab){
 			if(type(v) == type.string){
 				v = string.str(v);
-				if(string.lower(v) == "getdate()" || v === "NULL" || (string.startWith(v,"@") && !string.find(string.right(v,#v-1),"\A"))){		
+				if(string.lower(v) == "getdate()" || v === "NULL" || (string.startWith(v,"@") && !string.find(string.right(v,#v-1),"\A"))){				
 					table.push(t,v,",");
 				}
 				else {
@@ -25,6 +27,9 @@ namespace ms{
 			}
 			elseif(type(v) == type.number){
 				table.push(t,v,",");
+			}
+			elseif(type(v) == type.boolean){
+				table.push(t,v?1:0,",");
 			}
 		}
 		t[#t] = "";
@@ -48,6 +53,9 @@ namespace ms{
 			}
 			elseif(type(v) == type.number){
 				table.push(t,k,"=",v,",");
+			}
+			elseif(type(v) == type.boolean){
+				table.push(t,k,"=",v?1:0,",");
 			}
 		}
 		t[#t] = "";
@@ -77,7 +85,9 @@ namespace my{
 		var t = {};
 		table.push(t,"insert into " + tabname + "(");
 		for k,v in table.eachName(tab){
-			table.push(t,k,",");
+			if(type(v) == type.string || type(v) == type.number || type(v) == type.boolean){
+				table.push(t,k,",");
+			}
 		}
 		t[#t] = "";
 		table.push(t,")values(");
@@ -87,11 +97,16 @@ namespace my{
 				if(string.lower(v) == "now()" || v === "NULL"){				
 					table.push(t,v,",");
 				}else {
-					table.push(t,"'",string.replace(v,"'","''"),"'",",");
+					v = string.replace(v,"'","''");
+					v = string.replace(v,"@\","\\");
+					table.push(t,"'",v,"'",",");
 				}
 			}
 			elseif(type(v) == type.number){
 				table.push(t,v,",");
+			}
+			elseif(type(v) == type.boolean){
+				table.push(t,v?1:0,",");
 			}
 		}
 		t[#t] = "";
@@ -110,11 +125,16 @@ namespace my{
 				}
 				else {
 					table.push(t,k,"=");
-					table.push(t,"'",string.replace(v,"'","''"),"'",",")
+					v = string.replace(v,"'","''");
+					v = string.replace(v,"@\","\\");
+					table.push(t,"'",v,"'",",");
 				}
 			}
 			elseif(type(v) == type.number){
 				table.push(t,k,"=",v,",");
+			}
+			elseif(type(v) == type.boolean){
+				table.push(t,k,"=",v?1:0,",");
 			}
 		}
 		t[#t] = "";

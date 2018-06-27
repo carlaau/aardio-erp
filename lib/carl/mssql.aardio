@@ -5,7 +5,7 @@ mssql = class {
 	ctor( server,database,uid,pwd ){
 		var conn,err;
 		try{
-			 conn,err = sqlServer( server = server;database = database;uid = uid;pwd = pwd; )
+			 conn,err = sqlServer( ["Data Source"] = server;["Database"] = database;["User ID"] = uid;["Password"] = pwd; )
 		}
 		catch(e){
 			err = e;
@@ -32,18 +32,19 @@ mssql = class {
         while(!rs.eof){
         	var row = {};  
         	for(i,name in fields){ 
-        		v = rs( name ).value;
+        		v = rs( i-1 ).value;
         		if( type( v ) == "string" ) v = trim(v);
         		elseif(..time.istime(v)){//增加时间判断
         			v.format="%Y-%m-%d %H:%M:%S";
         			v = tostring(v);
         		}
-        		row[name] = v;
+        		if(#name) row[name] = v;
+        		else row[i] = v;
         	}        	
         	table.push( result,row );
         	rs.movenext();
         }
-		
+		rs.close();
 		return result;
 	}
 	
@@ -88,20 +89,20 @@ mssql = class {
 				}
         		var trim = string.trimright;
         		row = {};
-        		if(!rs.eof){        			
+        		if(!rs.eof){
         			var v;
         			for(i,name in fields){ 
-        				v = rs( name ).value;
-        				if( type( v ) == "string" ){
-        					v = trim(v);
-        				}
+        				v = rs( i-1 ).value;
+        				if( type( v ) == "string" ) v = trim(v);
         				elseif(..time.istime(v)){//增加时间判断
         					v.format="%Y-%m-%d %H:%M:%S";
         					v = tostring(v);
         				}
-        				row[name] = v;
+        				if(#name) row[name] = v;
+        				else row[i] = v;
         			}
-        		}      		
+        		}
+        		rs.close();     		
 			}
 		}
 		catch(e){

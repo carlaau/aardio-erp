@@ -37,9 +37,17 @@ server = class {
 	}
 	
 	reply = function( ... ){
+		var code = ..request.get["code"]:"";
 		var t = {...};
-		..carl.rpc.format(t);
-		return ..web.json.stringify(t); 
+		var str;
+		if( string.cmpMatch(code,"aardio" ) ){
+			str = table.tostring(t);
+		}
+		else {
+			..carl.rpc.format(t);
+			str = ..web.json.stringify(t); 
+		}
+		return str;
 	}
 }
 

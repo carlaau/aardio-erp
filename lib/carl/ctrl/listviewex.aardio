@@ -157,15 +157,15 @@ class listviewex {
 			}
 		}
 		if( !index or !colindex ){ return ; }
-		if( type(this.setCellBefore) == "function" ){
-			value = this.setCellBefore(value, t.key, index, colindex) : value;//显示单元格值之前加载
-		}
 		if( type(value) == type.table and value.year){//..time.istime(value)
 			value = ..time(value);
 			value.format="%Y-%m-%d %H:%M:%S";
 		}
 		if( value === 0){ value = "0";}
 		value = tostring(value:"");
+		if( type(this.setCellBefore) == "function" ){
+			value = this.setCellBefore(value, t.key, index, colindex) : value;//显示单元格值之前加载
+		}
 		this.setItemText(value, index, colindex)
 		if( type(this.setCellAfter) == "function" ){
 			this.setCellAfter(value, t.key, index, colindex);
@@ -532,7 +532,7 @@ class listviewex {
 		this.colorsBk[row] := {};
 		this.colorsBk[row][col] = color;
 	}
-
+	
 	exportToExcel = function(tdao,filename,sheetname = "sheet2"){
         var pathname,ok,dbXls,err;
         try{
@@ -569,6 +569,54 @@ class listviewex {
             err = e;
     	}
     	return (ok ? pathname : null),err;
+	}
+	
+	exportToExcelCom = function(tdao,filename,sheetname = "sheet2"){
+		import com.excel;
+		
+		var pathname,err;
+		try{
+			pathname = ..fsys.dlg.save("Execl文件(*.xls)|*.xls|Execl文件(*.xlsx)|*.xlsx||",,,this.hwnd,,filename)
+			if(!pathname){return ;} 
+			var excel = com.excel();
+			excel.alerts = false; //关闭所有操作提示	 	
+			var book = excel.WorkBooks.Add(); //创建工作簿
+  			for(i=1;excel.Sheets.Count;1){
+  				if(i>1) excel.ActiveWorkbook.Sheets(1).Delete();
+  			}
+			var sheet = excel.ActiveWorkbook.Sheets(1);
+			sheet.Select();	
+			sheet.Name = sheetname;
+			for(n=1;#tdao;1){
+				var key = tdao[n]
+				var t = this.getHead(key);
+				sheet.Cells(1,n).Value2 = t ? t.name : key; 
+			}
+			var index,tindex = this.getCheckedorSelected();
+			for(i,index in tindex){
+				for(n=1;#tdao;1){
+					var key = tdao[n];
+					var txt = "";
+					var t = this.getHead(key);
+					if(t) txt = this.get( index,key );
+					var num,len = tonumber(txt);
+            		txt = ( #txt == len and len <=8 ) ? txt : "'" + txt;
+					sheet.Cells(i+1, n).Value2 = txt;
+				}
+			};
+			excel.ActiveWorkBook.SaveAs(pathname);
+			excel.ActiveWorkbook.close();
+			excel.Quit();
+			book = null;
+			sheet = null;
+			excel = null;//释放所有对excel对象的引用
+			collectgarbage("collect");//内存回收,确保excel完全退出
+		}
+		catch(e){
+			pathname = null;
+			err = e;
+		}
+		return pathname,err; 
 	}
 	
 	getListview = function(){
@@ -623,6 +671,7 @@ win.ui.ctrl.listviewex = listview扩展控件
 !lvEx.showDataBefore() = @.showDataBefore = function(){\n	__\n}//显示列表数据之前加载
 !lvEx.showDataAfter() = @.showDataAfter = function(){\n	__\n}//显示列表数据之后加载
 !lvEx.exportToExcel(.(列名table对像,文件名字) = 导出选择中行，参数一:要导出的列名key值table,参数二可不填,成功:返回文件路径，失败:返回null,err错误信息
+!lvEx.exportToExcelCom(.(列名table对像,文件名字) = 导出选择中行，参数一:要导出的列名key值table,参数二可不填,成功:返回文件路径，失败:返回null,err错误信息
 !lvEx.addEdit = @.addEdit = {"__"}//设置原地编辑的列名key
 !lvEx.clickMouse = @.clickMouse = {"__"}//设置鼠标变成手状的列名key
 !lvEx.isCellEdit(col) = 参数:列数值，判断某一列是否有双击原地编辑
