@@ -52,7 +52,7 @@ template = class {
 			var row1 = tab[index+1];
 			var key1 = null;
 			if(row1) key1 = #this.rowKey ? row1[this.rowKey] : "1";
-			if((!row1 || key1 != key) && countNum>1){//小计
+			if((!row1 || key1 != key) && countNum>0){//小计
 				for(k,v in this.rowDefault){//行默认值
 					t[v] = row[v];
 				}

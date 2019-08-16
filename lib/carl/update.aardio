@@ -140,9 +140,9 @@ namespace update{
 		}
 	};
 	
-	updateWeb = function(exeName,res = "res"){
+	updateWeb = function(exeName,res = "res",update = "Publish\update\"){
 		if(_STUDIO_INVOKED){
-			var updateDir = projectDir + "Publish\update\";
+			var updateDir = projectDir ++ update;
 			fsys.createDir(updateDir)
 			var html = "ver=[%s]" + '\r\n' + "log=[" + '\r\n' + "%s" + '\r\n' + "]" + '\r\n';
 			var version = getVersion(res);

@@ -9,15 +9,16 @@ table = ..table;
 
 delay = ..win[["ui"]] ?  ..win[["delay"]] : sleep;
 
+agent ="Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.87 Safari/537.36";
+
 var func = function(tab,mode = "http"){
 	import inet.http;
 	import inet.whttp;
-	
-	var http,t;
-	tab["agent"] := "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:34.0) Gecko/20100101 Firefox/34.0";
+
+	var http,t;					 
 	if(mode == "http"){
 		http = inet.http(tab["agent"]);
-		if(tab["flags"]) http.flags = 0x80000000/*_INTERNET_FLAG_RELOAD强制文件从服务器下载不是缓存*/ | 0x4000000/*_INTERNET_FLAG_DONT_CACHE*不缓存数据*/
+		if(tab["flags"]) http.disableCache(); //http.flags = 0x80000000/*_INTERNET_FLAG_RELOAD强制文件从服务器下载不是缓存*/ | 0x4000000/*_INTERNET_FLAG_DONT_CACHE*不缓存数据*/
 	}else {
 		http = inet.whttp(tab["agent"],tab["proxy"]);
 	}
@@ -57,7 +58,7 @@ var functcp = function(tab){
 	var tsend = string.list(tab["header"]:"",'\r\n',":");
 	tsend["Host"] = turl.host;
 	tsend["Connection"] := "close";
-	tsend["User-Agent"] := tab["agent"] : "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:34.0) Gecko/20100101 Firefox/34.0";
+	tsend["User-Agent"] := tab["agent"];
 	tsend["Cache-Control"] := "max-age=0";
 	tsend["Accept"] := "application/xml,application/xhtml+xml,text/html;q=0.9,text/plain,image/png,*/*;";
 	tsend["Accept-Language"] := "zh-cn,zh;q=0.8,en-us;q=0.5,en;q=0.3;";
@@ -117,6 +118,7 @@ var funcommand = function(url, mode, ...){
 	else {
 		return null,"参数错误"; 
 	}
+	tab["agent"] := agent;
 	var handle,tid;
 	if(mode == "tcp"){
 		handle,tid = thread.create(functcp, tab);

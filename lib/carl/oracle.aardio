@@ -75,6 +75,43 @@ oracle = class {
 		return t,err;
 	}
 	
+	getTableFirst = function(sql,...){//执行SQL,返回第一条记录
+		var row,result,err,rs;
+		var tp = {...}
+		try{
+			if( this.conn ){
+				rs,err = this.conn.openRecordSet(sql,,,table.unpack(tp));
+				if(!rs) return;
+				
+				var fields = {};
+				for( i=1;rs.Fields.Count ){
+					fields[i] = rs.Fields(i-1).Name; 
+				}
+        		var trim = string.trimright;
+        		row = {};
+        		if(!rs.eof){        			
+        			var v;
+        			for(i,name in fields){ 
+        				v = rs( name ).value;
+        				if( type( v ) == "string" ){
+        					v = trim(v);
+        				}
+        				elseif(..time.istime(v)){//增加时间判断
+        					v.format="%Y-%m-%d %H:%M:%S";
+        					v = tostring(v);
+        				}
+        				row[name] = v;
+        			}
+        		}      		
+			}
+		}
+		catch(e){
+			err = e;
+		}
+		if( type(row) != type.table ) row = null;
+		return row,err;
+	}
+	
 	close = function(){
 		if( this.conn )
 			this.conn.close();
@@ -95,6 +132,7 @@ carl.oracle( server,database,uid,pwd,1521,"MSDAORA") = 创建oracle数据库连�
 carl.oracle() = !oracle.
 !oracle.conn = 数据库连接句柄
 !oracle.getTable(sql) = 返回查询结果集table对像\n每个元素代表一行,每行由N个键值对列组成,键fields为列名结果集
+!oracle.getTableFirst(sql) = 执行SQL,返回第一条记录,空记录返回空table对像
 !oracle.exec(sql) = 执行sq 成功返回ture,失败返回null,err
 !oracle.close() = 关闭连接
 end intellisense**/

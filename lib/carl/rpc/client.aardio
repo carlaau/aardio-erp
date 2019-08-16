@@ -24,7 +24,8 @@ client = class {
 				r,tab = call(eval,,html);
 			}
 			else {
-				r,tab = call(web.json.parse,,html);
+				tab = web.json.tryParse(html);
+				if(type(tab) == type.table) r = true;
 				if(r) carl.rpc.unformat(tab);
 			}
 			if(r){

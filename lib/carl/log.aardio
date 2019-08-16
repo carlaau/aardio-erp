@@ -28,13 +28,13 @@ readlog = function(filename,date = true){
 		filename = tostring(tdate) + "_" + filename;
 	}
 	filename = "/log/" + filename;
-	if( ..io.exist(filename) ){
-		var file = ..io.open(filename,"r");
-		var size = tonumber(file.size64());
-		size = size > 10000 ? 10000 : size;
-		file.seek("end")
-		str = file.readback(size)
-		file.close()
-	}
+	if( !..io.exist(filename) ) return str;
+	var file = ..io.open(filename,"r");
+	var size = tonumber(file.size64());
+	size = size > 10000 ? 10000 : size;
+	file.seek("end");
+	str = file.readback(size);
+	file.close();
+	str = ..string.replace(str,'.*?\n',"",1);
 	return str; 	
 }
