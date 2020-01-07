@@ -41,8 +41,8 @@ class listviewex {
 		
 		this.tooltipKey = {};//提示
 		this.tooltipAll = true;//所有鼠标提示
-		var tooltipCtr = ..win.ui.tooltip( this );//在窗口上创建tooltip控件 
-		var tooltipInfo = tooltipCtr.addTool(this.listview,,0x10/*_TTF_SUBCLASS*/ )
+		var tooltipCtrl = ..win.ui.tooltip( this );//在窗口上创建tooltip控件 
+		var tooltipInfo = tooltipCtrl.addTool(this.listview);
 		var lastTooltip;
 
 		..table.mix(this@, _metaProperty);
@@ -482,8 +482,7 @@ class listviewex {
 				}
         	}
         	if(colname) txt = this.get(row,colname);
-    		tooltipCtr.updateTipText(tooltipInfo,txt)
-			tooltipCtr.update()
+    		tooltipInfo.updateTipText(txt);
     	}
     	
  	}
