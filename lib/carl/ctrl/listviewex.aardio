@@ -482,7 +482,7 @@ class listviewex {
 				}
         	}
         	if(colname) txt = this.get(row,colname);
-    		tooltipInfo.updateTipText(txt);
+    		tooltipInfo.setText(txt);
     	}
     	
  	}
