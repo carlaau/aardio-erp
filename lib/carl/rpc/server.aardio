@@ -41,7 +41,7 @@ server = class {
 		var t = {...};
 		var str;
 		if( string.cmpMatch(code,"aardio" ) ){
-			str = table.tostring(t);
+			str = table.tostring(t,true);
 		}
 		else {
 			..carl.rpc.format(t);

@@ -19,21 +19,36 @@ var server = carl.rpc.server(config.rsaPrivateKey);
 var t = { server.receive() };//接收
 var funcName,err = t[1],t[2];
 var func = functions[funcName];
-if( !func ){
-	if(funcName){
-		response.write("'" + funcName + "' function not exist!");
-	}elseif( err ){
-		response.write(err);
-	}else{
-		response.write("welcome to aardio rpc!")
+
+var reply = function(t,func){
+	if(type.table != type(t)) return ; 
+	var funcName,err = t[1],t[2];
+	if( !func ){
+		if(funcName){
+			return "'" + funcName + "' function not exist!";
+		}
+		elseif( err ){
+			return err;
+		}
+		else{
+			return "welcome to aardio rpc!";
+		}
 	}
-	return;
+	if(type.function != type(func)) return ; 
+	var min,max = table.range(t);
+	var tab = { call(func,,table.unpack(t,2,max)) };
+	var ok,err = tab[1],tab[2];
+	if( !ok ) return string.concat("function: ",funcName,"Run Error.",err);
+
+	min,max = table.range(tab);
+	return server.reply(table.unpack(tab,2,max));
 }
-table.remove(t);
+
+var ret;
 try{
-	var jsontext = server.reply( func(table.unpackArgs(t)) );//执行自定义函数 并回复函数返回值
-	response.write( jsontext );
-	jsontext = null;
-}catch(e){
-	response.write(funcName ++ '函数出错.\r\n' ++ (e:""));
+    ret = reply(t,func);
 }
+catch(e){
+	ret = e;
+}
+response.write(ret); 
