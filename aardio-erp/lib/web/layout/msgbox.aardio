@@ -1,4 +1,4 @@
-﻿import win.ui;
+import win.ui;
 import win.clip;
 import string.html;
 import web.layoutEx;
@@ -17,6 +17,7 @@ msg = string.html.fromText(msg);
 winform.wndproc = function(hwnd,message,wParam,lParam){
 	if( message == 0x100/*_WM_KEYDOWN*/ && (wParam == 0xD/*_VK_ENTER*/ || wParam == 0x20/*_VK_SPACE*/)) { 
 		winform.close()
+		if(..mainForm) ..win.setForeground(..mainForm.hwnd);
 	}
 }
 

@@ -1,4 +1,4 @@
-﻿
+
 namespace web.layout.behavior.msgbox
 
 onButtonClick = {
@@ -7,11 +7,13 @@ onButtonClick = {
 		var winform = ltOwner.getForm();
 		winform.msg = 1;
 		winform.close();
+		if(..mainForm) ..win.setForeground(..mainForm.hwnd);
 	}
 	btnCancel = function (ltTarget,ltOwner,reason,behaviorParams) {
 		var winform = ltOwner.getForm();
 		winform.msg = 0;
 		winform.close();
+		if(..mainForm) ..win.setForeground(..mainForm.hwnd);
 	}
 	
 }

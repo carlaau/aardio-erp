@@ -1,4 +1,4 @@
-﻿
+
 namespace web.layout.behavior.main.click
 
 onMouseUp = {

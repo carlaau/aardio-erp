@@ -6,13 +6,20 @@ body {
   top: 10px;
   border: 0px solid @BORDER_COLOR; 
   background: @CLIENT_COLOR;
-  foreground-image: url( images/qq/afternoon.jpg );
+  foreground-image: url( images/qq/bk.jpg);
   foreground-repeat: no-repeat;
   opacity: 0;
-  transition: opacity(linear,1s);
+  transition: opacity(linear,0.5s);
   opacity: 1;
-  font-family: '宋体';
+  font-family: '微软雅黑', '宋体';
 } 
+
+div[command=window-caption] {
+  behavior:windowCommand;
+  width: 100%;
+  height:150px;
+  //background:#069dd6;
+}
 
 #MainFrame {
   behavior:windowCommand;
@@ -22,12 +29,12 @@ body {
   top: 0;
   left: 0;
   opacity: 0;
-  transition: opacity(linear,1.5s,1s);
+  transition: opacity(linear,0.5s,0.5s);
   opacity: 1;
 }
 
 #panel {
-  margin-top: 2px;
+  margin-top: 10px;
   width: 100%;
   flow: horizontal;
 }
@@ -130,6 +137,7 @@ input[type=checkbox]:checked:active {
 label {
   color: graytext;
   font-size: 12px;
+  font-family: 微软雅黑;
   margin-left: -2px;
 }
 
@@ -147,24 +155,25 @@ label {
   width: 100%%;
   text-align: right;
   flow: horizontal;
-  margin-top: 3px;
+
 }
 .select-road .roadName {
-  font-size: 12px;
+  font-size: 13px;
+  font-family: 微软雅黑;
   color: graytext;
 }
 .select-road .setroad {
   color:rgb(9,163,220);//#fff;
   width:max-intrinsic; 
   height:14px;
-  font-family:"Marlett";/*该字体显示按钮符号*/  
+  font-family:"Marlett";//该字体显示按钮符号  
   font-size:14px;
   padding:1px;
 }
 .select-road .setroad:hover {
   background:#6ebccf;
 }
-.select-road .setroad:owns-popup /*菜单已弹出*/
+.select-road .setroad:owns-popup //菜单已弹出
 { 
     background-color: #FF0000;
     color: #FFFFFF;
@@ -216,7 +225,6 @@ label {
 #register:active {
   background: url( images/qq/zhuce_press.png );
 }
-
 
 #forgetpwd {
   margin-top: 16px;
@@ -275,11 +283,6 @@ label {
 #qrcode:active {
   background: url( images/qq/corner_right_normal_down.png );
 }
-div[command=window-caption] {
-  behavior:windowCommand;
-  width: 100%;
-  height:190px;
-}
 
 .caption-buttons{
   behavior:windowCommand;
@@ -306,7 +309,13 @@ div[command=window-caption] {
 	color: white;
 	font-size: 24px;
 	text-align: center;
-	margin-top:60px
+	margin-top:40px
+}
+#copyright {
+	color: white;
+	font-size: 16px;
+	text-align: center;
+	margin-top:20px
 }
 #window-set {
   margin-right:0px; 

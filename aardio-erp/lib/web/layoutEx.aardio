@@ -1,4 +1,4 @@
-﻿
+
 import win;
 import web.layout; 
 import web.layout.behavior.windowCommand;
@@ -21,7 +21,7 @@ namespace web{
 			if(winform.max === false) this.querySelector( "[command='window-max']").command = "";//禁用双击标题最大化
 			if(!menu) this.getEle("windowmenu").style.display = "none";
 			var ele = this.getEle("mainTitle");
-			if(ele) ele.innerText = winform.text;
+			if(ele) ele.innerHTML = winform.text;
 		};
 		
 		msgbox = function(str,title,style){
@@ -118,7 +118,7 @@ namespace web{
 				error("无效配置文件",2);
 			for(name,value in cfgFile){
 				var ele = this.getEle(name);
-				if(!ele) continue ;			
+				if(!ele) continue ;
 				this.setEle(name,value);
 			}
 			cfgFile.beforeSave = function(){
@@ -157,6 +157,7 @@ namespace web{
 
 if(_reWinMsgbox) return ; 
 var msgbox = win.msgbox;
+
 win.msgbox = function(...){//重写win.msgbox函数，影响全局
 	var text,title,style,hwndOwner = ...;
 	if(!hwndOwner) hwndOwner = win.getForeground();
@@ -167,6 +168,7 @@ win.msgbox = function(...){//重写win.msgbox函数，影响全局
 		return msgbox(...); 
 	}
 }
+
 _reWinMsgbox = true;
 
 /**intellisense()

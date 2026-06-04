@@ -1,4 +1,4 @@
-﻿
+
 namespace web.layout.behavior.titleMenu
 	
 onMenuItemClick =  {
@@ -24,18 +24,19 @@ onMenuItemClick =  {
 	
 	//访问主页
 	website = function(ltTarget,ltOwner,reason,behaviorParams){
-		..process.execute(..thread.get("ahtmlServerUrl"));
-	}
-	
-	editPwd = function(ltTarget,ltOwner,reason,behaviorParams){
-		..mainForm.loadForm("\res\System\EditPwd.aardio");
+		..process.execute(..config.__website);
 	}
 	
 	//重载我的权限
 	limit = function(ltTarget,ltOwner,reason,behaviorParams){
+		..win.msgboxTimeout("重载中...","提示",1);
 		if( ..reStartMainLimit() ){
 			..mainForm.msgbox("重载成功","提示")
 		}
+	}
+	
+	editPwd = function(ltTarget,ltOwner,reason,behaviorParams){
+		..mainForm.loadForm("\res\System\EditPwd.aardio");
 	}
 	
 	openConsole = function(ltTarget,ltOwner,reason,behaviorParams){
