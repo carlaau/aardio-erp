@@ -1,22 +1,17 @@
-# aardio ERP Modernization Roadmap
+# Aardio ERP Modernization Roadmap
 
-## Phase 1
-Repository Architecture Analysis
+## 2025 Q3
+- Repository Architecture Analysis
+- Dependency Mapping
 
-## Phase 2
-Dependency Mapping
+## 2025 Q4
+- Test Coverage Improvement
+- Documentation Upgrade
 
-## Phase 3
-Test Coverage Improvement
+## 2026 Q1
+- Module Refactoring
+- RPC Layer Modernization
 
-## Phase 4
-Module Refactoring
-
-## Phase 5
-Documentation Upgrade
-
-## Phase 6
-Security Review
-
-## Phase 7
-Contributor Workflow Enhancement
+## 2026 Q2
+- Security Review
+- Contributor Workflow Enhancement
