@@ -166,17 +166,13 @@ Database Server
 
 The project is currently undergoing a modernization effort focused on:
 
-* Architecture review
-* Module decoupling
-* Improved testing
-* Documentation enhancements
-* Security review
-* Contributor onboarding
+- Architecture review
+- Module decoupling
+- Improved testing
+- Documentation enhancements
+- Security review
+- Contributor onboarding
 
-See:
+For current plans and progress, see the
+[Modernization Roadmap](../ROADMAP.md).
 
-```text
-ROADMAP.md
-```
-
-for current modernization plans.
