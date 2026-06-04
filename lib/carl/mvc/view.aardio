@@ -1,0 +1,117 @@
+﻿
+// +----------------------------------------------------------------------
+// | carlmvc [ aardio's in,just do it. ]
+// +----------------------------------------------------------------------
+// | Copyright (c) 2016-2017 http://aardio.org All rights reserved.
+// +----------------------------------------------------------------------
+// | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
+// +----------------------------------------------------------------------
+// | Author: carl <45212348@qq.com>
+// +----------------------------------------------------------------------
+
+namespace carl.mvc
+
+view = class {
+	ctor( configView, controller, tabMvcLogRunData ){
+
+	};
+
+	loadcode = function(viewpath, ...){
+		var viewFullPath = this.fullViewPath(viewpath);
+		..table.insert(tabMvcLogRunData,viewFullPath);
+		if( !..io.exist(viewFullPath) ) return this.errlog("Not Found View File.");
+
+		if( this.loadViewBefore ){
+			var ok,err = this.loadViewBefore(controller, controller.ctlPath, controller.ctlActionName, viewpath, viewFullPath);
+			if( ok === false ) return false,err;
+		}
+
+		var t,err = ..carl.mvc.common.loadcodeCall(viewFullPath,controller,...);
+		if(!t) return this.errlog(err);
+
+		if( this.loadViewAfter ) this.loadViewAfter(controller, controller.ctlPath, controller.ctlActionName, viewpath, viewFullPath, ..table.unpackArgs(t));
+		return ..table.unpackArgs(t);
+	}
+	
+	layout = function(viewpath, ...){
+		var viewFullPath = this.fullViewPath(viewpath);
+		if( ..io.exist(viewFullPath) ) this.loadcode(viewpath, ...);
+
+		var tParam = {...};		
+		controller.render = function(name,need){
+			..table.insert(tabMvcLogRunData,'owner.render("' ++ name ++ '",' ++ (need ? "true" : "false") ++ ')');
+			var lcode;
+			var code = controller[name];
+			var codePath = ..string.replace(viewFullPath,"@.aardio","." ++ name ++ ".aardio");
+			if(code){
+				if(..string.endWith(code,".aardio",true)){
+					code = this.fullViewPath(code);
+					..table.insert(tabMvcLogRunData,code);
+				}
+				lcode = code;
+			}
+			elseif( ..io.exist(codePath) ) {
+				..table.insert(tabMvcLogRunData,codePath);
+				lcode = codePath;
+			}
+			else{
+				return need ? this.errlog(viewFullPath ++ ",owner." ++ name++ '未定义,\n或者' ++ codePath ++ ",文件不存在!") : null;
+			}
+			var tab,err = ..carl.mvc.common.loadcodeCall(lcode,controller,..table.unpackArgs(tParam));
+			if(!tab){
+				err = ..string.replace(err:"","@(loadcode)",viewFullPath ++ ",布局渲染:" ++ name);
+				return this.errlog(err);
+			}
+			return ..table.unpackArgs(tab);
+		}
+		controller.layoutPath := configView.layoutPath;
+		var layoutPath = this.fullViewPath(controller.layoutPath);
+		..table.insert(tabMvcLogRunData,layoutPath);
+		if( !..io.exist(layoutPath) ) return this.errlog("Not Found Layout View File.");
+
+		var t,err = ..carl.mvc.common.loadcodeCall(layoutPath,controller,...);
+		if(!t) return this.errlog(err);
+		return ..table.unpackArgs(t);
+	}
+	
+	fullViewPath = function(viewPath){
+		viewPath := controller.ctlPath ++ "." ++ controller.ctlActionName;
+		return ..carl.mvc.common.fullMvcPath(viewPath,configView.dir,configView.ext);
+	}
+}
+
+/**intellisense(carl.mvc)
+view = mvc视图库
+view(configView, controller, debug) = 创建一个mvc视图
+view() = !mvcview.
+end intellisense**/
+
+/**intellisense(!mvcview)
+layout() = 布局模板加载mvc视图,无传参\n不传参数一,默认加载当前方法对应的mvc视图,\n如:mvc.controller.default控制器中index=fuction()方法,对应 /mvc/view/default/index.aardio视图\n\n此函数仅限在mvc控制器内调用
+layout( = 布局模板加载mvc视图,有传参\n参数一:视图路径,其余参数传给视图.\n参数一视图路径有三种写法:\n一:相对于网站根目录写法 "\application\mvc\view\default\index.aardio"\n二:相对视图目录写法 "\default\index.aardio"\n三:视图对象路径写法 "default.index"\n以上三种写都是指向index.aardio文件,效果一样\n\n在被调用视图文件中使用var a,b,c = ...;获取其余参数\n传参给视图推荐另一种方法是使用viewbag对像\n\n与view.loadcode区别:需事先配置布局模板文件路径layoutPath变量\nlayoutPath取值顺序:\nowner.layoutPath(视图) > owner.layoutPath(控制器) > config.mvcconfig.view.layoutPath(mvcconfig.aardio应用配置)\n在布局模板视图中用owner.render函数局部渲染\n\n此函数仅限在mvc控制器内调用
+layout(.("视图路径",->->->) = 布局模板加载mvc视图,有传参\n参数一:视图路径,其余参数传给视图.\n参数一视图路径有三种写法:\n一:相对于网站根目录写法 "\application\mvc\view\default\index.aardio"\n二:相对视图目录写法 "\default\index.aardio"\n三:视图对象路径写法 "default.index"\n以上三种写都是指向index.aardio文件,效果一样\n\n在被调用视图文件中使用var a,b,c = ...;获取其余参数\n传参给视图推荐另一种方法是使用viewbag对像\n\n与view.loadcode区别:需事先配置布局模板文件路径layoutPath变量\nlayoutPath取值顺序:\nowner.layoutPath(视图) > owner.layoutPath(控制器) > config.mvcconfig.view.layoutPath(mvcconfig.aardio应用配置)\n在布局模板视图中用owner.render函数局部渲染\n\n此函数仅限在mvc控制器内调用
+
+loadcode() = 直接加载mvc视图,无传参\n不传参数一,默认加载当前方法对应的mvc视图,\n如:mvc.controller.default控制器中index=fuction()方法,对应 /mvc/view/default/index.aardio视图\n\n此函数仅限在mvc控制器内调用
+loadcode( = 直接加载mvc视图,有传参\n参数一:视图路径,其余参数传给视图.\n参数一视图路径有三种写法:\n一:相对于网站根目录写法 "\application\mvc\view\default\index.aardio"\n二:相对视图目录写法 "\default\index.aardio"\n三:视图对象路径写法 "default.index"\n以上三种写都是指向index.aardio文件,效果一样\n\n在被调用视图文件中使用var a,b,c = ...;获取其余参数\n传参给视图推荐另一种方法是使用viewbag对像\n\n此函数仅限在mvc控制器内调用
+loadcode(.("视图路径",->->->) = 加载mvc视图,有传参\n参数一:视图路径,其余参数传给视图.\n参数一视图路径有三种写法:\n一:相对于网站根目录写法 "\application\mvc\view\default\index.aardio"\n二:相对视图目录写法 "\default\index.aardio"\n三:视图对象路径写法 "default.index"\n以上三种写都是指向index.aardio文件,效果一样\n\n在被调用视图文件中使用var a,b,c = ...;获取其余参数\n传参给视图推荐另一种方法是使用viewbag对像\n\n此函数仅限在mvc控制器内调用
+
+fullViewPath() = 视图路径转换为绝对路径,参数:视图路径,不传参返回当前控制器方法对应的视图文件\n视图路径有三种写法:1.相对于网站根目录,2.相对于视图目录,3.视图对象路径(default.index)\n\n此函数仅限在mvc控制器内调用
+end intellisense**/
+
+/**intellisense()
+this.view = !mvcview.
+owner.view = !mvcview.
+end intellisense**/
+
+/**intellisense()
+owner = 拥有该成员函数的当前对象,\n执行语句 对象.成员函数(参数),函数名前面的对象即成员函数的owner对象,\n\n在迭代器函数中的owner表示集合对象,\n在独立运行的aardio文件或库文件中,owner表示当前文件路径,\n在对象的元方法中,owner表示当前对象(或左操作数)\n\n在mvc视图中,owner表示调用当前视图文件的控制器对象
+
+owner.layoutPath = @.layoutPath = "\layout.aardio";\n//设置布局模板文件路径,\n//相对于\mvc\view\视图目录,比如:\mvc\view\layout\index.aardio,只需写"\layout\index.aardio",\n//优先级:视图>控制器>config.mvcconfig.view.layoutPath(mvcconfig.aardio应用配置),\n//仅限在mvc视图或控制器中使用
+this.layoutPath = @.layoutPath = "\layout.aardio";\n//设置布局模板文件路径,\n//相对于\mvc\view\视图目录,比如:\mvc\view\layout\index.aardio,只需写"\layout\index.aardio",\n//优先级:视图>控制器>config.mvcconfig.view.layoutPath(mvcconfig.aardio应用配置),\n//仅限在mvc视图或控制器中使用
+
+owner.viewbag = 设置mvc控制器传给视图的参数table对象,viewbag变量默认是table对象,\n在视图文件里用owner.viewbag获取
+this.viewbag = 设置mvc控制器传给视图的参数table对象,viewbag变量默认是table对象,\n在视图文件里用owner.viewbag获取
+
+owner.render("",false) = 在布局模板视图页中,呈现指定部分内容,并指定该部分内容是否必需,\n参数一:部分内容标识符\n参数二:布尔值 该部分内容是否必需,\n说明: 部分内容可为可执行的代码块或视图文件路径,\n\n比如:owner.render("body"),\n优先找视图中定义的owner.body 或控制器定义的owner.body,this.body,\n如果视图或控制器都未定义,再找控制器方法对应的视图文件名加上.body的文件,\nmvc.controller.default控制器中index=fuction()方法和/view/default/index.aardio视图文件,\n以上这两种都对应/view/default/index.body.aardio部分内容文件\n限在布局模板文件中调用
+
+end intellisense**/
