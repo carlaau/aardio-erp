@@ -1,7 +1,7 @@
 ## Documentation
 
-- Architecture Overview: docs/architecture.md
-- Modernization Roadmap: ROADMAP.md
+- Architecture Overview: [docs/architecture.md](docs/architecture.md)
+- Modernization Roadmap: [ROADMAP.md](ROADMAP.md)
   
 # Aardio ERP
 
