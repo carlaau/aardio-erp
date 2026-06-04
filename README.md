@@ -1,45 +1,52 @@
-#aardio-erp,½öÖ§³Öaardio10ÒÔÉÏ°æ±¾
+## Project Status
 
-## Ä¿Â¼ÎÄ¼şËµÃ÷
+Aardio ERP is currently undergoing a modernization effort focused on:
 
-`/aardio-cgi` cgiÔ´Âë,ÓÃÓÚ·¢²¼aardio-cgi.exe
+- Architecture review
+- Module decoupling
+- Test coverage
+- Documentation improvements
+- Security review
+- Contributor onboarding
+  
+#aardio-erp,ä»…æ”¯æŒaardio10ä»¥ä¸Šç‰ˆæœ¬
 
-`/aardio-rpc` rpc·şÎñ¶ËÔ´Âë
+## ç›®å½•æ–‡ä»¶è¯´æ˜
 
-`/aardio-erp` erp¿ò¼Ü¿Í»§¶ËÔ´Âë
+`/aardio-cgi` cgiæºç ,ç”¨äºå‘å¸ƒaardio-cgi.exe
+
+`/aardio-rpc` rpcæœåŠ¡ç«¯æºç 
+
+`/aardio-erp` erpæ¡†æ¶å®¢æˆ·ç«¯æºç 
 
 ![image](http://bbs.aardio.org/data/attachment/forum/201505/10/163148ylheqev9dhrvpwnw.png)
 ![image](http://bbs.aardio.org/data/attachment/forum/201505/10/163202lu9293n4zky923ug.png)
 
-## ¿ò¼ÜÊ¹ÓÃ²½Öè
+## æ¡†æ¶ä½¿ç”¨æ­¥éª¤
 
-1.ÏÈ°ÑÓÃ»§¿â `\lib\carl\` ¸´ÖÆµ½ ide±ê×¼¿â `\lib\carl\` Ä¿Â¼ÏÂ,·ñÔòÔËĞĞ²»ÁË.(´Ë×Ô¶¨Òå¿â¿É×öÎª±ê×¼¿âÊ¹ÓÃ,)
+1.å…ˆæŠŠç”¨æˆ·åº“ `\lib\carl\` å¤åˆ¶åˆ° ideæ ‡å‡†åº“ `\lib\carl\` ç›®å½•ä¸‹,å¦åˆ™è¿è¡Œä¸äº†.(æ­¤è‡ªå®šä¹‰åº“å¯åšä¸ºæ ‡å‡†åº“ä½¿ç”¨,)
 
-2.°Ñ\aardio-erp\rpc\Ä¿Â¼ÏÂËùÓĞÎÄ¼şÉÏ´«µ½·şÎñ¶Ë,IISÄ¿Â¼Ö¸Ïò `\wwwroot`, ²¢Ìí¼ÓÄ£¿éÓ³ÉäÖ¸Ïò`\aardio-cgi.exe`
+2.æŠŠ\aardio-erp\rpc\ç›®å½•ä¸‹æ‰€æœ‰æ–‡ä»¶ä¸Šä¼ åˆ°æœåŠ¡ç«¯,IISç›®å½•æŒ‡å‘ `\wwwroot`, å¹¶æ·»åŠ æ¨¡å—æ˜ å°„æŒ‡å‘`\aardio-cgi.exe`
 
-3.¼ÜÉèÊı¾İ¿â,ÏÈÊÖ¶¯½¨ºÃÊı¾İ¿â,²¢µ¼ÈëÊı¾İ¿âÏàÓ¦°²×°ÎÄ¼şaardio-erp-mssql.sql»òaardio-erp-mysql(utf8,InnoDB).sql
+3.æ¶è®¾æ•°æ®åº“,å…ˆæ‰‹åŠ¨å»ºå¥½æ•°æ®åº“,å¹¶å¯¼å…¥æ•°æ®åº“ç›¸åº”å®‰è£…æ–‡ä»¶aardio-erp-mssql.sqlæˆ–aardio-erp-mysql(utf8,InnoDB).sql
 
-4.Ä¬ÈÏ³¬¼¶¹ÜÀíÔ±ÕÊºÅ: admin ÃÜÂë: admin
+4.é»˜è®¤è¶…çº§ç®¡ç†å‘˜å¸å·: admin å¯†ç : admin
 
-5.ÅäÖÃ·şÎñ¶ËÊı¾İ¿âÁ¬½ÓÎÄ¼ş `\wwwroot\system\config.aardio`
+5.é…ç½®æœåŠ¡ç«¯æ•°æ®åº“è¿æ¥æ–‡ä»¶ `\wwwroot\system\config.aardio`
 
-6.´ò¿ª¿Í»§¶Ë¹¤³ÌÎÄ¼ş
+6.æ‰“å¼€å®¢æˆ·ç«¯å·¥ç¨‹æ–‡ä»¶
 
-7.ÅäÖÃ¿Í»§¶ËÊı¾İ¿âÀàĞÍ `\lib\config.aardio  (config.__driveÖµ)`
+7.é…ç½®å®¢æˆ·ç«¯æ•°æ®åº“ç±»å‹ `\lib\config.aardio  (config.__driveå€¼)`
 
-8.ÅäÖÃ¿Í»§¶ËÏßÂ· `\lib\config.aardio  (config.__appRoadÖµ)`
+8.é…ç½®å®¢æˆ·ç«¯çº¿è·¯ `\lib\config.aardio  (config.__appRoadå€¼)`
 
-9.·¢²¼EXE,´ò¿ª `\Publish\update\`, °ÑÏàÓ¦µÄÎÄ¼şÉÏ´«µ½·şÎñ¶Ë `\wwwroot\update\` Ä¿Â¼ÏÂ¾Í¿ÉÒÔ,¿Í»§¶Ë½«»á×Ô¶¯Éı¼¶,¾ßÌå²Ù×÷ÈçÏÂ
+9.å‘å¸ƒEXE,æ‰“å¼€ `\Publish\update\`, æŠŠç›¸åº”çš„æ–‡ä»¶ä¸Šä¼ åˆ°æœåŠ¡ç«¯ `\wwwroot\update\` ç›®å½•ä¸‹å°±å¯ä»¥,å®¢æˆ·ç«¯å°†ä¼šè‡ªåŠ¨å‡çº§,å…·ä½“æ“ä½œå¦‚ä¸‹
 
-  a. ÇëÊÖ¶¯°Ñ Erp.exe ·ÅÓÚRARÑ¹Ëõ°üÄÚ
+  a. è¯·æ‰‹åŠ¨æŠŠ Erp.exe æ”¾äºRARå‹ç¼©åŒ…å†…
 
-  b. ¼ÇÊÂ±¾´ò¿ªindex.html, ÌîĞ´¸üĞÂÈÕÖ¾,(¿É²»Ğ´)
+  b. è®°äº‹æœ¬æ‰“å¼€index.html, å¡«å†™æ›´æ–°æ—¥å¿—,(å¯ä¸å†™)
 
-  c. Çë°Ñ Erp.exe,index.html,aardio-erp.rar Èı¸öÎÄ¼ş,ÉÏ´«µ½ÍøÕ¾¶ÔÓ¦µÄupdateÄ¿Â¼ÏÂ,¾Í¿ÉÊµÏÖ¿Í»§¶Ë×Ô¶¯Éı¼¶¹¦ÄÜ
+  c. è¯·æŠŠ Erp.exe,index.html,aardio-erp.rar ä¸‰ä¸ªæ–‡ä»¶,ä¸Šä¼ åˆ°ç½‘ç«™å¯¹åº”çš„updateç›®å½•ä¸‹,å°±å¯å®ç°å®¢æˆ·ç«¯è‡ªåŠ¨å‡çº§åŠŸèƒ½
 
-## ·´À¡
-¼¼ÊõÖ§³ÖÂÛÌ³: http://bbs.aardio.org/
-
-QQÈº: 70517368
-
-¹Ù·½:http://www.aardio.com
+## å®˜æ–¹
+å®˜æ–¹:http://www.aardio.com
