@@ -1,3 +1,7 @@
+# aardio ERP
+
+Open-source Enterprise Application Framework for the Aardio ecosystem.
+
 ## Project Status
 
 Aardio ERP is currently undergoing a modernization effort focused on:
