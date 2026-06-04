@@ -1,3 +1,8 @@
+## Documentation
+
+- Architecture Overview: docs/architecture.md
+- Modernization Roadmap: ROADMAP.md
+  
 # Aardio ERP
 
 Open-source Enterprise Application Framework for the Aardio ecosystem.
